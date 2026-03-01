@@ -1,3 +1,16 @@
+# Virtual Environment
 venv/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Model files (DO NOT UPLOAD)
+models/*.dat
+models/*.bz2
+
+# OS files
+.DS_Store
+Thumbs.db
