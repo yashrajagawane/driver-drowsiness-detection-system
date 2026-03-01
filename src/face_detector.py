@@ -1,6 +1,8 @@
 import cv2
 import dlib
 import os
+import numpy as np
+from src.ear import eye_aspect_ratio
 
 
 def run_face_detection():
@@ -17,7 +19,6 @@ def run_face_detection():
     # Model path
     model_path = "models/shape_predictor_68_face_landmarks.dat"
 
-    # Check if model exists
     if not os.path.exists(model_path):
         print("Model file not found! Run download_model.py first.")
         return
@@ -50,12 +51,36 @@ def run_face_detection():
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
+            # Get facial landmarks
             landmarks = predictor(gray, face)
 
-            # Draw eye landmarks (36-47)
-            for n in range(36, 48):
-                x = landmarks.part(n).x
-                y = landmarks.part(n).y
+            # Convert landmarks to numpy array
+            points = np.array(
+                [(landmarks.part(i).x, landmarks.part(i).y) for i in range(68)]
+            )
+
+            # Right eye (36-41)
+            right_eye = points[36:42]
+
+            # Left eye (42-47)
+            left_eye = points[42:48]
+
+            # Calculate EAR for both eyes
+            right_ear = eye_aspect_ratio(right_eye)
+            left_ear = eye_aspect_ratio(left_eye)
+
+            # Average EAR
+            ear = (right_ear + left_ear) / 2.0
+
+            # Display EAR
+            cv2.putText(frame, f"EAR: {ear:.2f}", (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+
+            # Draw eye landmarks
+            for (x, y) in right_eye:
+                cv2.circle(frame, (x, y), 2, (0, 0, 255), -1)
+
+            for (x, y) in left_eye:
                 cv2.circle(frame, (x, y), 2, (0, 0, 255), -1)
 
         cv2.imshow("Face and Eye Detection Test", frame)
