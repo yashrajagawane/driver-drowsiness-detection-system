@@ -1,64 +1,27 @@
-from flask import Flask, render_template, redirect, url_for
-import threading
-from src.face_detector import run_face_detection
+from flask import Flask, render_template, Response, jsonify
+from src.face_detector import generate_frames, system_state
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Flag to track if detection is already running
-detection_running = False
-
-
-# -------------------------------
-# Home Page Route
-# -------------------------------
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
+@app.route('/video_feed')
+def video_feed():
+    return Response(
+        generate_frames(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
 
-# -------------------------------
-# Start Detection Route
-# -------------------------------
-@app.route("/start_detection", methods=["POST"])
-def start_detection():
+@app.route('/metrics')
+def metrics():
+    return jsonify(system_state)
 
-    global detection_running
+if __name__ == '__main__':
+    print("\n==============================")
+    print(" AI DRIVER MONITORING SYSTEM ")
+    print("==============================\n")
+    print("Open browser → http://127.0.0.1:5000\n")
 
-    if not detection_running:
-        print("[INFO] Starting Driver Drowsiness Detection System...")
-
-        detection_running = True
-
-        # Run detection in a separate thread
-        thread = threading.Thread(target=run_detection_thread)
-        thread.daemon = True
-        thread.start()
-
-    else:
-        print("[INFO] Detection already running.")
-
-    return redirect(url_for("index"))
-
-
-# -------------------------------
-# Thread Function
-# -------------------------------
-def run_detection_thread():
-    global detection_running
-
-    try:
-        run_face_detection()
-    finally:
-        detection_running = False
-        print("[INFO] Detection stopped.")
-
-
-# -------------------------------
-# Run Flask Server
-# -------------------------------
-if __name__ == "__main__":
-    print("\n[INFO] Flask server started.")
-    print("[INFO] Open browser → http://127.0.0.1:5000\n")
-
-    app.run(debug=True)
+    app.run(debug=True, threaded=True, use_reloader=False)

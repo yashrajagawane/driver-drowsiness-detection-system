@@ -1,68 +1,100 @@
 import cv2
 import dlib
-import os
 import winsound
+import imutils
+import time
 from src.ear import eye_aspect_ratio
 
-# --- Detection Settings ---
+
 EAR_THRESHOLD = 0.25
-CONSECUTIVE_FRAMES = 15
-# ---------------------------
+DROWSY_SECONDS = 1.1
 
 
+# -----------------------------
+# System State (Dashboard Data)
+# -----------------------------
+system_state = {
+    "ear": 0,
+    "faces": 0,
+    "status": "Initializing...",
+    "fatigue": 0
+}
+
+
+# -----------------------------
+# Alarm Controls
+# -----------------------------
 def sound_alarm():
-    """Play alarm sound asynchronously"""
-    winsound.PlaySound("sounds/alarm.wav", winsound.SND_ASYNC)
+    winsound.PlaySound(
+        "sounds/alarm.wav",
+        winsound.SND_ASYNC | winsound.SND_LOOP
+    )
 
 
-def run_face_detection():
+def stop_alarm():
+    winsound.PlaySound(None, winsound.SND_PURGE)
 
-    model_path = "models/shape_predictor_68_face_landmarks.dat"
-    alarm_path = "sounds/alarm.wav"
 
-    # Check required files
-    if not os.path.exists(model_path):
-        print("Face landmark model not found! Run download_model.py first.")
-        return
-
-    if not os.path.exists(alarm_path):
-        print("Alarm sound file not found in sounds/ folder.")
-        return
+# -----------------------------
+# Frame Generator (Flask Stream)
+# -----------------------------
+def generate_frames():
 
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+
+    # Reduce camera buffering (prevents lag)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+    if not cap.isOpened():
+        print("[ERROR] Could not open camera")
+        return
 
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(model_path)
+    predictor = dlib.shape_predictor(
+        "models/shape_predictor_68_face_landmarks.dat"
+    )
 
-    print("Driver Drowsiness Detection Started... Press 'q' to quit.")
+    print("[INFO] Starting AI Driver Monitoring System")
 
-    frame_counter = 0
+    eyes_closed_start = None
     alarm_on = False
+
+    # FPS tracking
+    prev_time = 0
 
     while True:
 
         success, frame = cap.read()
 
         if not success:
-            print("Camera not working!")
             break
+
+        # Resize for performance
+        frame = imutils.resize(frame, width=480)
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        faces = detector(gray, 1)
+        faces = detector(gray, 0)
 
-        # Display number of faces detected
-        cv2.putText(frame, f"Faces: {len(faces)}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        system_state["faces"] = len(faces)
+
+        cv2.putText(
+            frame,
+            f"Faces: {len(faces)}",
+            (10, 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            2
+        )
 
         if len(faces) == 0:
-            frame_counter = 0
+            eyes_closed_start = None
+            system_state["status"] = "No Face Detected"
 
-        for face in faces:
+        # Process only the first detected face (prevents lag)
+        for face in faces[:1]:
 
-            # Safe bounding box
             x1 = max(0, face.left())
             y1 = max(0, face.top())
             x2 = min(frame.shape[1], face.right())
@@ -75,19 +107,15 @@ def run_face_detection():
             left_eye = []
             right_eye = []
 
-            # Left eye landmarks (36–41)
             for n in range(36, 42):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
                 left_eye.append((x, y))
-                cv2.circle(frame, (x, y), 2, (0, 0, 255), -1)
 
-            # Right eye landmarks (42–47)
             for n in range(42, 48):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
                 right_eye.append((x, y))
-                cv2.circle(frame, (x, y), 2, (0, 0, 255), -1)
 
             # Calculate EAR
             left_ear = eye_aspect_ratio(left_eye)
@@ -95,37 +123,87 @@ def run_face_detection():
 
             ear = (left_ear + right_ear) / 2.0
 
-            cv2.putText(frame, f"EAR: {ear:.2f}", (10, 60),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+            system_state["ear"] = round(ear, 2)
 
-            # ---- Drowsiness Detection ----
+            fatigue = int((1 - ear) * 100)
+            fatigue = max(0, min(fatigue, 100))
+
+            system_state["fatigue"] = fatigue
+
+            cv2.putText(
+                frame,
+                f"EAR: {ear:.2f}",
+                (10, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (255, 0, 0),
+                2
+            )
+
+            # -----------------------------
+            # Drowsiness Detection
+            # -----------------------------
             if ear < EAR_THRESHOLD:
 
-                frame_counter += 1
+                if eyes_closed_start is None:
+                    eyes_closed_start = time.time()
 
-                if frame_counter >= CONSECUTIVE_FRAMES:
+                time_closed = time.time() - eyes_closed_start
+
+                system_state["status"] = "Eyes Closing..."
+
+                if time_closed >= DROWSY_SECONDS:
+
+                    system_state["status"] = "DROWSY!"
 
                     if not alarm_on:
                         alarm_on = True
                         sound_alarm()
 
-                    cv2.putText(frame,
-                                "DROWSINESS ALERT!",
-                                (100, 200),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                1.2,
-                                (0, 0, 255),
-                                4)
+                    cv2.putText(
+                        frame,
+                        "DROWSINESS ALERT!",
+                        (110, 200),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1.1,
+                        (0, 0, 255),
+                        4
+                    )
 
             else:
-                frame_counter = 0
-                alarm_on = False
-            # --------------------------------
 
-        cv2.imshow("Driver Drowsiness Detection", frame)
+                eyes_closed_start = None
+                system_state["status"] = "Awake"
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+                if alarm_on:
+                    alarm_on = False
+                    stop_alarm()
+
+        # -----------------------------
+        # FPS Counter (Performance)
+        # -----------------------------
+        current_time = time.time()
+        fps = 1 / (current_time - prev_time) if prev_time else 0
+        prev_time = current_time
+
+        cv2.putText(
+            frame,
+            f"FPS: {int(fps)}",
+            (10, 75),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 255, 255),
+            2
+        )
+
+        # Encode frame for browser streaming
+        ret, buffer = cv2.imencode(".jpg", frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
+        )
 
     cap.release()
-    cv2.destroyAllWindows()
+    stop_alarm()

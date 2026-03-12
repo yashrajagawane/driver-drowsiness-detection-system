@@ -3,108 +3,283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Driver Drowsiness Detection</title>
+<title>Driver Monitoring Dashboard</title>
 
 <style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: "Segoe UI", Arial, sans-serif;
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;
 }
 
 body{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background: linear-gradient(135deg,#1f4037,#99f2c8);
+background:#121212;
+color:#e0e0e0;
+display:flex;
+flex-direction:column;
+align-items:center;
+min-height:100vh;
+padding:20px;
 }
 
-.container{
-    background:white;
-    padding:50px;
-    border-radius:15px;
-    width:420px;
-    text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+.header{
+width:100%;
+max-width:1100px;
+padding:20px;
+border-bottom:2px solid #333;
+margin-bottom:30px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-h1{
-    font-size:28px;
-    margin-bottom:15px;
-    color:#222;
+.header h1{
+font-size:24px;
+letter-spacing:2px;
+color:#fff;
 }
 
-.subtitle{
-    color:#666;
-    margin-bottom:35px;
+.dashboard-container{
+display:flex;
+flex-wrap:wrap;
+width:100%;
+max-width:1100px;
+gap:30px;
+justify-content:center;
 }
 
-.icon{
-    font-size:60px;
-    margin-bottom:15px;
+.video-panel{
+flex:2;
+min-width:500px;
+background:#1e1e1e;
+padding:15px;
+border-radius:12px;
+box-shadow:0 8px 24px rgba(0,0,0,0.5);
 }
 
-.start-btn{
-    background:#007bff;
-    color:white;
-    border:none;
-    padding:15px 30px;
-    font-size:18px;
-    border-radius:8px;
-    cursor:pointer;
-    transition:0.3s;
+.video-feed{
+width:100%;
+border-radius:8px;
+border:2px solid #444;
 }
 
-.start-btn:hover{
-    background:#0056b3;
-    transform:scale(1.05);
+.status-panel{
+flex:1;
+min-width:300px;
+background:#1e1e1e;
+padding:25px;
+border-radius:12px;
+box-shadow:0 8px 24px rgba(0,0,0,0.5);
+display:flex;
+flex-direction:column;
+gap:20px;
 }
 
-.status{
-    margin-top:25px;
-    font-size:14px;
-    color:#888;
+.metric-box{
+background:#2a2a2a;
+padding:15px;
+border-radius:8px;
+border-left:5px solid #00ff88;
+transition:0.2s;
 }
 
-.footer{
-    margin-top:30px;
-    font-size:12px;
-    color:#aaa;
+.metric-title{
+font-size:14px;
+color:#aaaaaa;
+text-transform:uppercase;
+letter-spacing:1px;
+margin-bottom:5px;
+}
+
+.metric-value{
+font-size:28px;
+font-weight:bold;
+color:#ffffff;
+}
+
+.status-drowsy{border-left-color:#ff3333;}
+.status-warning{border-left-color:#ffaa00;}
+
+.text-drowsy{color:#ff3333 !important;}
+.text-awake{color:#00ff88 !important;}
+.text-warning{color:#ffaa00 !important;}
+
+.fatigue-bar-container{
+width:100%;
+background:#333;
+border-radius:10px;
+overflow:hidden;
+height:20px;
+margin-top:10px;
+}
+
+.fatigue-bar{
+height:100%;
+width:0%;
+background:#00ff88;
+transition:width 0.3s ease, background-color 0.3s ease;
+}
+
+.system-footer{
+margin-top:auto;
+color:#666;
+font-size:14px;
+width:100%;
+max-width:1100px;
+text-align:right;
+padding-top:20px;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
-
-<div class="icon">🚗</div>
-
-<h1>Driver Drowsiness Detection</h1>
-
-<p class="subtitle">
-AI powered system that monitors eye movement and alerts the driver if fatigue is detected.
-</p>
-
-<form action="/start_detection" method="POST">
-<button class="start-btn">▶ Start Detection</button>
-</form>
-
-<div class="status">
-System Status: <b>Ready</b>
+<div class="header">
+<h1>AI DRIVER MONITORING</h1>
+<div id="clock" style="color:#888;"></div>
 </div>
 
-<div class="footer">
-Computer Vision • OpenCV • Dlib • Flask
+<div class="dashboard-container">
+
+<div class="video-panel">
+<h3 style="margin-bottom:15px;color:#aaa;font-size:14px;letter-spacing:1px;">
+[ LIVE CAMERA FEED ]
+</h3>
+
+<img src="{{ url_for('video_feed') }}" class="video-feed" alt="Camera Initializing...">
+
+</div>
+
+<div class="status-panel">
+
+<h3 style="margin-bottom:10px;color:#aaa;font-size:14px;letter-spacing:1px;">
+DRIVER STATUS PANEL
+</h3>
+
+<div class="metric-box" id="box-status">
+
+<div class="metric-title">Driver Status</div>
+<div class="metric-value text-awake" id="val-status">Loading...</div>
+
+</div>
+
+<div class="metric-box">
+
+<div class="metric-title">Eye Aspect Ratio (EAR)</div>
+<div class="metric-value" id="val-ear">0.00</div>
+
+</div>
+
+<div class="metric-box">
+
+<div class="metric-title">Faces Detected</div>
+<div class="metric-value" id="val-faces">0</div>
+
+</div>
+
+<div class="metric-box">
+
+<div class="metric-title">
+Fatigue Level (<span id="val-fatigue-text">0</span>%)
+</div>
+
+<div class="fatigue-bar-container">
+<div class="fatigue-bar" id="val-fatigue-bar"></div>
 </div>
 
 </div>
+
+</div>
+
+</div>
+
+<div class="system-footer">
+
+System Status: <span style="color:#00ff88;">● Active</span>
+|
+Neural Network: Dlib 68-Point
+
+</div>
+
+
+<script>
+
+/* CLOCK */
+
+setInterval(()=>{
+document.getElementById("clock").innerText=
+new Date().toLocaleTimeString();
+},1000);
+
+
+
+/* FETCH METRICS */
+
+setInterval(()=>{
+
+fetch("/metrics")
+.then(res=>res.json())
+.then(data=>{
+
+if(!data)return;
+
+document.getElementById("val-ear").innerText=data.ear;
+document.getElementById("val-faces").innerText=data.faces;
+
+const statusEl=document.getElementById("val-status");
+const statusBox=document.getElementById("box-status");
+
+statusEl.innerText=data.status;
+
+const fatigueBar=document.getElementById("val-fatigue-bar");
+
+document.getElementById("val-fatigue-text").innerText=data.fatigue;
+
+fatigueBar.style.width=data.fatigue+"%";
+
+
+/* STATUS COLORS */
+
+statusEl.classList.remove("text-awake","text-warning","text-drowsy");
+statusBox.classList.remove("status-warning","status-drowsy");
+
+
+if(data.status.includes("DROWSY")){
+
+statusEl.classList.add("text-drowsy");
+statusBox.classList.add("status-drowsy");
+
+fatigueBar.style.backgroundColor="#ff3333";
+
+}
+
+else if(data.status.includes("Closing")){
+
+statusEl.classList.add("text-warning");
+statusBox.classList.add("status-warning");
+
+fatigueBar.style.backgroundColor="#ffaa00";
+
+}
+
+else{
+
+statusEl.classList.add("text-awake");
+
+fatigueBar.style.backgroundColor="#00ff88";
+
+}
+
+})
+
+.catch(()=>console.log("metrics waiting..."))
+
+},500);
+
+</script>
 
 </body>
 </html>
