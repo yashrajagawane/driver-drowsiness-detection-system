@@ -1,35 +1,45 @@
 import cv2
 import dlib
 import os
+import winsound
 from src.ear import eye_aspect_ratio
 
-
 # --- Detection Settings ---
-EAR_THRESHOLD = 0.25        # If EAR is below this, eyes are considered closed
-CONSECUTIVE_FRAMES = 20     # Frames eyes must stay closed before triggering alert
+EAR_THRESHOLD = 0.25
+CONSECUTIVE_FRAMES = 15
 # ---------------------------
+
+
+def sound_alarm():
+    """Play alarm sound asynchronously"""
+    winsound.PlaySound("sounds/alarm.wav", winsound.SND_ASYNC)
 
 
 def run_face_detection():
 
-    # Check if landmark model exists
     model_path = "models/shape_predictor_68_face_landmarks.dat"
+    alarm_path = "sounds/alarm.wav"
+
+    # Check required files
     if not os.path.exists(model_path):
-        print("Model file not found! Please run download_model.py first.")
+        print("Face landmark model not found! Run download_model.py first.")
         return
 
-    # Open webcam
+    if not os.path.exists(alarm_path):
+        print("Alarm sound file not found in sounds/ folder.")
+        return
+
     cap = cv2.VideoCapture(0)
     cap.set(3, 640)
     cap.set(4, 480)
 
-    # Load dlib detectors
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(model_path)
 
-    print("Starting Driver Drowsiness Detection... Press 'q' to quit.")
+    print("Driver Drowsiness Detection Started... Press 'q' to quit.")
 
     frame_counter = 0
+    alarm_on = False
 
     while True:
 
@@ -43,7 +53,7 @@ def run_face_detection():
 
         faces = detector(gray, 1)
 
-        # Show number of detected faces
+        # Display number of faces detected
         cv2.putText(frame, f"Faces: {len(faces)}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
@@ -62,16 +72,17 @@ def run_face_detection():
 
             landmarks = predictor(gray, face)
 
-            # Extract left eye
             left_eye = []
+            right_eye = []
+
+            # Left eye landmarks (36–41)
             for n in range(36, 42):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
                 left_eye.append((x, y))
                 cv2.circle(frame, (x, y), 2, (0, 0, 255), -1)
 
-            # Extract right eye
-            right_eye = []
+            # Right eye landmarks (42–47)
             for n in range(42, 48):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
@@ -84,28 +95,32 @@ def run_face_detection():
 
             ear = (left_ear + right_ear) / 2.0
 
-            # Display EAR
             cv2.putText(frame, f"EAR: {ear:.2f}", (10, 60),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
 
-            # --- Drowsiness Detection Logic ---
+            # ---- Drowsiness Detection ----
             if ear < EAR_THRESHOLD:
 
                 frame_counter += 1
 
                 if frame_counter >= CONSECUTIVE_FRAMES:
 
+                    if not alarm_on:
+                        alarm_on = True
+                        sound_alarm()
+
                     cv2.putText(frame,
                                 "DROWSINESS ALERT!",
                                 (100, 200),
                                 cv2.FONT_HERSHEY_SIMPLEX,
-                                1.5,
+                                1.2,
                                 (0, 0, 255),
                                 4)
 
             else:
                 frame_counter = 0
-            # -----------------------------------
+                alarm_on = False
+            # --------------------------------
 
         cv2.imshow("Driver Drowsiness Detection", frame)
 
