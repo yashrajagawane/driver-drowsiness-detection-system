@@ -1,16 +1,39 @@
+# ------------------------------
 # Virtual Environment
+# ------------------------------
 venv/
+env/
+ENV/
 
-# Python cache
+# ------------------------------
+# Python Cache
+# ------------------------------
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
 
-# Model files (DO NOT UPLOAD)
-models/*.dat
-models/*.bz2
+# ------------------------------
+# Build / Distribution
+# ------------------------------
+build/
+dist/
+*.egg-info/
 
-# OS files
+# ------------------------------
+# Environment variables
+# ------------------------------
+.env
+
+# ------------------------------
+# OS Files
+# ------------------------------
 .DS_Store
 Thumbs.db
+
+# ------------------------------
+# IDE Settings
+# ------------------------------
+.vscode/
+.idea/

@@ -3,20 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driver Monitoring Dashboard</title>
+
+<title>AI Driver Monitoring</title>
 
 <style>
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
 
 *{
 box-sizing:border-box;
 margin:0;
 padding:0;
-font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;
 }
 
 body{
-background:#121212;
-color:#e0e0e0;
+background:#0d0d0d;
+color:white;
+font-family:'Roboto',sans-serif;
 display:flex;
 flex-direction:column;
 align-items:center;
@@ -24,112 +27,142 @@ min-height:100vh;
 padding:20px;
 }
 
-.header{
-width:100%;
-max-width:1100px;
-padding:20px;
-border-bottom:2px solid #333;
+/* HEADER */
+
+.dash-header{
+font-family:'Orbitron',sans-serif;
+letter-spacing:3px;
+text-shadow:0 0 10px rgba(255,255,255,0.2);
 margin-bottom:30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+text-align:center;
 }
 
-.header h1{
-font-size:24px;
-letter-spacing:2px;
-color:#fff;
-}
+/* MAIN LAYOUT */
 
 .dashboard-container{
 display:flex;
 flex-wrap:wrap;
 width:100%;
-max-width:1100px;
+max-width:1200px;
 gap:30px;
 justify-content:center;
 }
 
+/* VIDEO PANEL */
+
 .video-panel{
 flex:2;
 min-width:500px;
-background:#1e1e1e;
-padding:15px;
+background:linear-gradient(145deg,#1a1a1a,#121212);
+padding:20px;
 border-radius:12px;
-box-shadow:0 8px 24px rgba(0,0,0,0.5);
+box-shadow:0 8px 24px rgba(0,0,0,0.6);
+position:relative;
 }
 
 .video-feed{
 width:100%;
 border-radius:8px;
-border:2px solid #444;
+border:2px solid #333;
+background:black;
+transform:scaleX(-1);
 }
+
+/* START BUTTON */
+
+.overlay-btn{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:15px 40px;
+background:#00e676;
+color:black;
+font-family:'Orbitron',sans-serif;
+font-size:18px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+box-shadow:0 0 20px rgba(0,230,118,0.7);
+}
+
+.overlay-btn:hover{
+background:#00c853;
+}
+
+/* TELEMETRY */
 
 .status-panel{
 flex:1;
-min-width:300px;
-background:#1e1e1e;
-padding:25px;
-border-radius:12px;
-box-shadow:0 8px 24px rgba(0,0,0,0.5);
+min-width:350px;
 display:flex;
 flex-direction:column;
 gap:20px;
 }
 
-.metric-box{
-background:#2a2a2a;
-padding:15px;
-border-radius:8px;
-border-left:5px solid #00ff88;
-transition:0.2s;
+.metric-container{
+background:linear-gradient(145deg,#1a1a1a,#121212);
+padding:20px;
+border-radius:12px;
+border-left:5px solid #00e676;
+box-shadow:0 8px 16px rgba(0,0,0,0.4);
+}
+
+.metric-container.drowsy{
+border-left:5px solid red;
+animation:pulse 1s infinite;
+}
+
+.metric-container.warning{
+border-left:5px solid orange;
+}
+
+@keyframes pulse{
+0%{box-shadow:0 0 10px rgba(255,0,0,0.4)}
+50%{box-shadow:0 0 30px rgba(255,0,0,0.8)}
+100%{box-shadow:0 0 10px rgba(255,0,0,0.4)}
 }
 
 .metric-title{
-font-size:14px;
-color:#aaaaaa;
-text-transform:uppercase;
+color:#888;
+font-size:13px;
 letter-spacing:1px;
 margin-bottom:5px;
 }
 
 .metric-value{
-font-size:28px;
-font-weight:bold;
-color:#ffffff;
+font-family:'Orbitron',sans-serif;
+font-size:32px;
 }
 
-.status-drowsy{border-left-color:#ff3333;}
-.status-warning{border-left-color:#ffaa00;}
+.text-awake{color:#00e676}
+.text-warning{color:orange}
+.text-drowsy{color:red}
 
-.text-drowsy{color:#ff3333 !important;}
-.text-awake{color:#00ff88 !important;}
-.text-warning{color:#ffaa00 !important;}
+/* PROGRESS BAR */
 
 .fatigue-bar-container{
 width:100%;
 background:#333;
 border-radius:10px;
 overflow:hidden;
-height:20px;
+height:15px;
 margin-top:10px;
 }
 
 .fatigue-bar{
 height:100%;
 width:0%;
-background:#00ff88;
-transition:width 0.3s ease, background-color 0.3s ease;
+background:#00e676;
+transition:width 0.3s;
 }
 
-.system-footer{
-margin-top:auto;
-color:#666;
-font-size:14px;
-width:100%;
-max-width:1100px;
-text-align:right;
-padding-top:20px;
+/* FPS */
+
+.system-info{
+margin-top:10px;
+font-size:12px;
+color:#aaa;
 }
 
 </style>
@@ -137,147 +170,212 @@ padding-top:20px;
 
 <body>
 
-<div class="header">
-<h1>AI DRIVER MONITORING</h1>
-<div id="clock" style="color:#888;"></div>
-</div>
+<h1 class="dash-header">🚗 AI DRIVER MONITORING HUB</h1>
 
 <div class="dashboard-container">
 
 <div class="video-panel">
-<h3 style="margin-bottom:15px;color:#aaa;font-size:14px;letter-spacing:1px;">
-[ LIVE CAMERA FEED ]
-</h3>
 
-<img src="{{ url_for('video_feed') }}" class="video-feed" alt="Camera Initializing...">
+<div style="color:#aaa;margin-bottom:10px">[ LIVE BROWSER SENSOR ]</div>
+
+<button id="startBtn" class="overlay-btn">ENGAGE SYSTEM</button>
+
+<video id="videoElement" class="video-feed" autoplay playsinline></video>
+
+<canvas id="canvasElement" style="display:none;"></canvas>
+
+<div class="system-info">
+<span id="fps">FPS: 0</span>
+</div>
+
+<!-- FIXED: Using Flask url_for and preloading the audio -->
+<audio id="alarmAudio" loop preload="auto">
+<source src="{{ url_for('static', filename='alarm.wav') }}" type="audio/wav">
+</audio>
 
 </div>
 
 <div class="status-panel">
 
-<h3 style="margin-bottom:10px;color:#aaa;font-size:14px;letter-spacing:1px;">
-DRIVER STATUS PANEL
-</h3>
+<div style="color:#aaa">[ TELEMETRY ]</div>
 
-<div class="metric-box" id="box-status">
-
-<div class="metric-title">Driver Status</div>
-<div class="metric-value text-awake" id="val-status">Loading...</div>
-
+<div class="metric-container" id="box-status">
+<div class="metric-title">Driver State</div>
+<div class="metric-value text-awake" id="val-status">SYSTEM STANDBY</div>
 </div>
 
-<div class="metric-box">
-
-<div class="metric-title">Eye Aspect Ratio (EAR)</div>
+<div class="metric-container">
+<div class="metric-title">EAR</div>
 <div class="metric-value" id="val-ear">0.00</div>
-
 </div>
 
-<div class="metric-box">
-
+<div class="metric-container">
 <div class="metric-title">Faces Detected</div>
 <div class="metric-value" id="val-faces">0</div>
-
 </div>
 
-<div class="metric-box">
-
-<div class="metric-title">
-Fatigue Level (<span id="val-fatigue-text">0</span>%)
-</div>
-
+<div class="metric-container">
+<div class="metric-title">Fatigue (<span id="val-fatigue-text">0</span>%)</div>
 <div class="fatigue-bar-container">
 <div class="fatigue-bar" id="val-fatigue-bar"></div>
 </div>
-
 </div>
 
 </div>
-
 </div>
-
-<div class="system-footer">
-
-System Status: <span style="color:#00ff88;">● Active</span>
-|
-Neural Network: Dlib 68-Point
-
-</div>
-
 
 <script>
 
-/* CLOCK */
+const video=document.getElementById("videoElement")
+const canvas=document.getElementById("canvasElement")
+const ctx=canvas.getContext("2d")
 
-setInterval(()=>{
-document.getElementById("clock").innerText=
-new Date().toLocaleTimeString();
-},1000);
+const startBtn=document.getElementById("startBtn")
+const alarmAudio=document.getElementById("alarmAudio")
 
+let aiLoop
+let lastTime=performance.now()
+let frameCount=0
+let isAlarm=false
 
+startBtn.onclick=async()=>{
 
-/* FETCH METRICS */
+try{
 
-setInterval(()=>{
+const stream=await navigator.mediaDevices.getUserMedia({video:true})
 
-fetch("/metrics")
-.then(res=>res.json())
-.then(data=>{
+video.srcObject=stream
 
-if(!data)return;
+startBtn.style.display="none"
 
-document.getElementById("val-ear").innerText=data.ear;
-document.getElementById("val-faces").innerText=data.faces;
+// FIXED: Robust audio unlocking
+alarmAudio.volume = 1.0;
+alarmAudio.play().then(() => {
+    alarmAudio.pause();
+    alarmAudio.currentTime = 0;
+}).catch((e) => {
+    console.warn("Audio unlock pending: ", e);
+});
 
-const statusEl=document.getElementById("val-status");
-const statusBox=document.getElementById("box-status");
+video.onloadedmetadata=()=>{
 
-statusEl.innerText=data.status;
+canvas.width=video.videoWidth
+canvas.height=video.videoHeight
 
-const fatigueBar=document.getElementById("val-fatigue-bar");
-
-document.getElementById("val-fatigue-text").innerText=data.fatigue;
-
-fatigueBar.style.width=data.fatigue+"%";
-
-
-/* STATUS COLORS */
-
-statusEl.classList.remove("text-awake","text-warning","text-drowsy");
-statusBox.classList.remove("status-warning","status-drowsy");
-
-
-if(data.status.includes("DROWSY")){
-
-statusEl.classList.add("text-drowsy");
-statusBox.classList.add("status-drowsy");
-
-fatigueBar.style.backgroundColor="#ff3333";
+aiLoop=setInterval(processFrame,500)
 
 }
 
-else if(data.status.includes("Closing")){
+}catch(e){
 
-statusEl.classList.add("text-warning");
-statusBox.classList.add("status-warning");
-
-fatigueBar.style.backgroundColor="#ffaa00";
+alert("Camera permission required")
 
 }
 
-else{
-
-statusEl.classList.add("text-awake");
-
-fatigueBar.style.backgroundColor="#00ff88";
-
 }
 
+async function processFrame(){
+
+ctx.drawImage(video,0,0,canvas.width,canvas.height)
+
+const img=canvas.toDataURL("image/jpeg",0.6)
+
+try{
+
+const res=await fetch("/detect",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({image:img})
 })
 
-.catch(()=>console.log("metrics waiting..."))
+const data=await res.json()
 
-},500);
+updateUI(data)
+
+}catch(err){
+
+console.log("Server error")
+
+}
+
+updateFPS()
+
+}
+
+function updateFPS(){
+
+frameCount++
+
+const now=performance.now()
+
+if(now-lastTime>=1000){
+
+document.getElementById("fps").innerText="FPS: "+frameCount
+
+frameCount=0
+
+lastTime=now
+
+}
+
+}
+
+function updateUI(data){
+
+document.getElementById("val-ear").innerText=data.ear.toFixed(2)
+document.getElementById("val-faces").innerText=data.faces
+
+const status=document.getElementById("val-status")
+const box=document.getElementById("box-status")
+
+const fatigueBar=document.getElementById("val-fatigue-bar")
+
+document.getElementById("val-fatigue-text").innerText=data.fatigue
+
+fatigueBar.style.width=data.fatigue+"%"
+
+status.innerText=data.status
+
+if(data.is_drowsy){
+
+status.className="metric-value text-drowsy"
+box.className="metric-container drowsy"
+
+fatigueBar.style.background="red"
+
+if(!isAlarm){
+    // FIXED: Catch errors to prevent silent failures
+    alarmAudio.play().catch(e => console.error("Error playing alarm: Make sure the file is in the 'static' folder!", e));
+    isAlarm=true
+}
+
+}
+else if(data.is_closing){
+
+status.className="metric-value text-warning"
+box.className="metric-container warning"
+
+fatigueBar.style.background="orange"
+
+}
+else{
+
+status.className="metric-value text-awake"
+box.className="metric-container"
+
+fatigueBar.style.background="#00e676"
+
+if(isAlarm){
+
+alarmAudio.pause()
+alarmAudio.currentTime=0
+isAlarm=false
+
+}
+
+}
+
+}
 
 </script>
 
