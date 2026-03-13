@@ -1,9 +1,7 @@
 #🚗 AI Driver Drowsiness Detection System
 
-A real-time AI-based driver monitoring system that detects fatigue using the Eye Aspect Ratio (EAR) and computer vision techniques. 
-The application continuously analyzes the driver’s eye movements through the browser camera and identifies signs of drowsiness in real time.
-
-When prolonged eye closure is detected, the system instantly triggers alerts to help prevent accidents and improve road safety.
+A real-time AI driver monitoring system that detects fatigue using Eye Aspect Ratio (EAR) and computer vision. 
+It analyzes eye movements through the browser camera and triggers alerts when drowsiness is detected.
 
 Built using Python, Flask, OpenCV, and Dlib for efficient real-time facial landmark detection and monitoring.
 
