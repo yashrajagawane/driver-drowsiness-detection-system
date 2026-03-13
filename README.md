@@ -9,11 +9,11 @@ Built with **Flask, OpenCV, and Dlib**, and deployed on the cloud for real-time 
 
 ## 🌐 Live Demo
 
-🔗 **Application Link**
-https://smart-driver-monitor.onrender.com
+Experience the **AI Driver Monitoring Dashboard** in real-time.
 
-> Note: The first request may take ~30–50 seconds because the free Render instance goes to sleep after inactivity.
+[![Launch Demo](https://img.shields.io/badge/🚗%20Open%20Live%20Dashboard-Click%20Here-success?style=for-the-badge)](https://smart-driver-monitor.onrender.com)
 
+> ⚠️ The free Render server may take **30–50 seconds to wake up** on first request.
 ---
 
 ## 🧠 Features
