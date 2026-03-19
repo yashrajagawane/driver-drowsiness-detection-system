@@ -1,4 +1,4 @@
-#🚗 AI Driver Drowsiness Detection System
+# 🚗 AI Driver Drowsiness Detection System
 
 A real-time AI driver monitoring system that detects fatigue using Eye Aspect Ratio (EAR) and computer vision. 
 It analyzes eye movements through the browser camera and triggers alerts when drowsiness is detected.
