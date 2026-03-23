@@ -1,64 +1,61 @@
 # 🚗 AI Driver Drowsiness Detection System
 
-A real-time AI driver monitoring system that detects fatigue using Eye Aspect Ratio (EAR) and computer vision. 
-It analyzes eye movements through the browser camera and triggers alerts when drowsiness is detected.
+A **real-time AI-powered driver monitoring system** that detects driver fatigue using computer vision and alerts the user to prevent accidents.
 
-Built using Python, Flask, OpenCV, and Dlib for efficient real-time facial landmark detection and monitoring.
+This project uses **Flask, OpenCV, and Dlib** to analyze eye movements from a live browser camera feed and detect drowsiness using the **Eye Aspect Ratio (EAR)** algorithm.
 
 ---
 
 ## 🌐 Live Demo
 
-Experience the **AI Driver Monitoring Dashboard** in real-time.
-
 [![Launch Demo](https://img.shields.io/badge/🚗%20Open%20Live%20Dashboard-Click%20Here-success?style=for-the-badge)](https://smart-driver-monitor.onrender.com)
 
-> ⚠️ The free Render server may take **30–50 seconds to wake up** on first request.
----
-
-## 🧠 Features
-
-* 🚗 **Real-time driver monitoring**
-* 👁️ **Eye Aspect Ratio (EAR) based fatigue detection**
-* 📷 **Browser camera access using WebRTC**
-* ⚡ **Live telemetry dashboard**
-* 🚨 **Automatic alarm when driver is drowsy**
-* 🎨 **Tesla-inspired dark UI dashboard**
-* 🌐 **Cloud deployment using Render**
-* 🔄 **Continuous frame processing using Flask API**
+> ⚠️ Note: Free Render server may take **30–50 seconds** to start on first request.
 
 ---
 
-## 🖥️ System Architecture
+## 🚀 Key Features
+
+* 🚗 Real-time driver monitoring
+* 👁️ Eye Aspect Ratio (EAR) based fatigue detection
+* 📷 Live browser camera integration (WebRTC)
+* 🚨 Automatic alert system for drowsiness
+* ⚡ Real-time dashboard updates
+* 🎨 Clean and modern UI
+* ☁️ Cloud deployment using Render
+* 🔄 Continuous frame processing via Flask API
+
+---
+
+## 🧠 How It Works
+
+1. Captures frames from the browser camera
+2. Sends frames to Flask backend
+3. Detects face using Dlib facial landmarks
+4. Calculates Eye Aspect Ratio (EAR)
+5. Compares EAR with threshold values
+6. Detects drowsiness and triggers alert
+7. Updates live dashboard
+
+---
+
+## 📊 Drowsiness Detection Formula
 
 ```
-Browser Camera
-      │
-      ▼
-JavaScript Frame Capture
-      │
-      ▼
-Send Frames (AJAX / Fetch API)
-      │
-      ▼
-Flask Backend API
-      │
-      ▼
-OpenCV + Dlib Face Landmark Detection
-      │
-      ▼
-Eye Aspect Ratio Calculation
-      │
-      ▼
-Drowsiness Detection
-      │
-      ▼
-Live Dashboard Update + Alarm
+EAR = (||p2 − p6|| + ||p3 − p5||) / (2 ||p1 − p4||)
 ```
+
+### Detection Logic
+
+| Condition                            | Result           |
+| ------------------------------------ | ---------------- |
+| EAR above threshold                  | Driver Awake     |
+| EAR below threshold (short duration) | Eye Blink        |
+| EAR below threshold (long duration)  | Drowsiness Alert |
 
 ---
 
-## 📂 Project Structure
+## 🏗️ Project Structure
 
 ```
 driver-drowsiness-detection-system
@@ -85,7 +82,7 @@ driver-drowsiness-detection-system
 
 ---
 
-## ⚙️ Technologies Used
+## ⚙️ Tech Stack
 
 * Python
 * Flask
@@ -94,66 +91,52 @@ driver-drowsiness-detection-system
 * NumPy
 * JavaScript
 * HTML / CSS
-* Render (Cloud Deployment)
+* Render (Deployment)
 
 ---
 
-## 📊 Drowsiness Detection Algorithm
+## 🚀 Installation & Setup
 
-The system uses **Eye Aspect Ratio (EAR)** to detect fatigue.
-
-```
-EAR = (||p2 − p6|| + ||p3 − p5||) / (2 ||p1 − p4||)
-```
-
-Where the eye landmarks are obtained using the **68-point facial landmark model**.
-
-### Detection Logic
-
-| Condition                               | System Response  |
-| --------------------------------------- | ---------------- |
-| EAR above threshold                     | Driver Awake     |
-| EAR below threshold briefly             | Eyes Closing     |
-| EAR below threshold for longer duration | Drowsiness Alert |
-
----
-
-## 🚀 Installation (Local Setup)
-
-Clone the repository:
+### Clone the repository
 
 ```bash
 git clone https://github.com/yashrajagawane/driver-drowsiness-detection-system.git
 cd driver-drowsiness-detection-system
 ```
 
-Create virtual environment:
+### Create virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-Activate environment:
+### Activate environment
 
-Windows
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-Install dependencies:
+Mac/Linux:
+
+```bash
+source venv/bin/activate
+```
+
+### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the application:
+### Run the application
 
 ```bash
 python app.py
 ```
 
-Open browser:
+### Open in browser
 
 ```
 http://127.0.0.1:5000
@@ -165,20 +148,20 @@ http://127.0.0.1:5000
 
 This project is deployed using **Render Cloud Platform**.
 
-Steps used for deployment:
+### Steps:
 
-1. Push project to GitHub
+1. Push code to GitHub
 2. Create Web Service on Render
-3. Connect GitHub repository
-4. Set build command
+3. Connect your repository
+4. Set build command:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-5. Set start command
+5. Set start command:
 
-```
+```bash
 gunicorn app:app
 ```
 
@@ -186,28 +169,20 @@ gunicorn app:app
 
 ## 🎯 Use Cases
 
-* Driver monitoring systems
-* Automotive safety applications
-* Fleet management systems
-* Smart vehicle safety AI
-* Real-time fatigue detection
-
----
-
-## 📸 Screenshots
-
-*(You can add screenshots of your dashboard here)*
+* 🚗 Driver safety systems
+* 🚛 Fleet management monitoring
+* 🤖 AI-based fatigue detection
+* 🚘 Smart vehicle applications
 
 ---
 
 ## 🔮 Future Improvements
 
 * Head pose detection
-* Blink rate monitoring
-* Face bounding box visualization
+* Blink rate analysis
+* Deep learning-based fatigue detection
 * Mobile device optimization
-* Deep learning based fatigue detection
-* Multi-driver detection support
+* Multi-driver detection
 
 ---
 
@@ -215,11 +190,12 @@ gunicorn app:app
 
 **Yashraj Agawane**
 
-GitHub
-https://github.com/yashrajagawane
+🔗 GitHub: https://github.com/yashrajagawane
 
 ---
 
 ## ⭐ Support
 
-If you found this project useful, consider giving it a **star ⭐ on GitHub**.
+If you found this project helpful, please give it a **star ⭐ on GitHub** — it motivates further development!
+
+---
