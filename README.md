@@ -1,14 +1,19 @@
 <div align="center">
-# 🚗 AI Driver Drowsiness Detection System
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&duration=3000&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Real-Time+AI+Driver+Monitoring;Eye+Aspect+Ratio+%28EAR%29+Detection;Powered+by+OpenCV+%2B+Dlib+%2B+Flask" alt="Typing SVG" />
+# 🚗 **AI Driver Drowsiness Detection System**
+
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=20&duration=3000&pause=1000&color=00D4FF&center=true&vCenter=true&width=650&lines=Real-Time+AI+Driver+Monitoring;Eye+Aspect+Ratio+%28EAR%29+Detection;Powered+by+OpenCV+%2B+Dlib+%2B+Flask" alt="Typing SVG" />
 
 <br/>
 
 [![Launch Demo](https://img.shields.io/badge/🚗%20Live%20Demo-Open%20Dashboard-00D4FF?style=for-the-badge&logo=render&logoColor=white)](https://smart-driver-monitor.onrender.com)
+
+<br/>
+
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-Backend-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
 [![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org)
+[![Dlib](https://img.shields.io/badge/Dlib-Facial%20Landmarks-FF6B35?style=for-the-badge&logoColor=white)](http://dlib.net)
 
 <br/>
 
@@ -16,19 +21,6 @@
 > Prevents road accidents by monitoring driver alertness through a live browser camera feed.
 
 > ⚠️ *Free Render server may take **30–50 seconds** to wake up on first visit.*
-
-</div>
-
----
-
-## 📸 Preview
-
-<div align="center">
-
-| 🟢 Driver Awake | 🔴 Drowsiness Detected |
-|:-:|:-:|
-| EAR above threshold | EAR below threshold (sustained) |
-| System monitoring normally | 🚨 Alert triggered immediately |
 
 </div>
 
@@ -107,7 +99,9 @@ Browser Camera  →  Flask Backend  →  Dlib Face Detection
 
 ### Eye Aspect Ratio (EAR)
 
-$$EAR = \frac{||p_2 - p_6|| + ||p_3 - p_5||}{2 \cdot ||p_1 - p_4||}$$
+```
+EAR = (||p2 − p6|| + ||p3 − p5||) / (2 × ||p1 − p4||)
+```
 
 </div>
 
@@ -148,17 +142,13 @@ driver-drowsiness-detection-system/
 
 ## ⚙️ Tech Stack
 
-<div align="center">
-
 | Layer | Technology |
-|:-----:|:----------:|
+|:------|:-----------|
 | 🖥️ Backend | Python · Flask · Gunicorn |
 | 👁️ Vision | OpenCV · Dlib · NumPy |
 | 🌐 Frontend | HTML · CSS · JavaScript |
 | 📡 Streaming | WebRTC |
 | ☁️ Deployment | Render Cloud |
-
-</div>
 
 ---
 
@@ -237,19 +227,15 @@ http://127.0.0.1:5000
 
 ---
 
-## 👨‍💻 Author
-
 <div align="center">
+
+## 👨‍💻 Author
 
 **Yashraj Agawane**
 
 [![GitHub](https://img.shields.io/badge/GitHub-yashrajagawane-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yashrajagawane)
 
-</div>
-
 ---
-
-<div align="center">
 
 ### ⭐ Found this helpful?
 
