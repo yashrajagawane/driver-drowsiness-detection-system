@@ -5,9 +5,6 @@
 # 🚗 AI Driver Drowsiness Detection System
 
 ### Real-Time Fatigue Monitoring Powered by Computer Vision
-
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=20&duration=3000&pause=1000&color=00D4FF&center=true&vCenter=true&width=650&lines=Real-Time+AI+Driver+Monitoring;Eye+Aspect+Ratio+%28EAR%29+Detection;Powered+by+OpenCV+%2B+Dlib+%2B+Flask" alt="Typing SVG" />
-
 <br/>
 
 [![Launch Demo](https://img.shields.io/badge/🚗%20Live%20Demo-Open%20Dashboard-00D4FF?style=for-the-badge&logo=render&logoColor=white)](https://smart-driver-monitor.onrender.com)
