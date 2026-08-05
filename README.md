@@ -48,12 +48,7 @@
 - [Getting Started](#-getting-started)
 - [Configuration](#-configuration)
 - [Deployment on Render](#️-deployment-on-render)
-- [Use Cases](#-use-cases)
 - [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [FAQ](#-faq)
-- [Disclaimer](#️-disclaimer)
-- [License](#-license)
 - [Author](#-author)
 
 ---
