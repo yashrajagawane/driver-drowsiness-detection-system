@@ -1,3 +1,5 @@
+<a name="readme-top"></a>
+
 <div align="center">
 
 # 🚗 **AI Driver Drowsiness Detection System**
@@ -47,19 +49,17 @@
 
 <div align="center">
 
-| Awake / Monitoring | Blink Detected |
-|:---:|:---:|
-| ![Awake state](docs/screenshots/dashboard-awake.png) | ![Blink detected](docs/screenshots/dashboard-blink.png) |
-| Normal state — EAR stays above threshold, dashboard shows all-clear | Brief EAR dip from a natural blink — correctly ignored, no alert |
+![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
 
-| Drowsiness Alert | Facial Landmark Detection |
-|:---:|:---:|
-| ![Drowsiness alert](docs/screenshots/dashboard-drowsy-alert.png) | ![Landmark overlay](docs/screenshots/landmark-detection.png) |
-| Sustained low EAR — alarm triggers and dashboard flags the driver | 68-point Dlib landmarks with the 6 eye points used in the EAR calculation |
+**AI Driver Monitoring Hub — standby state**
 
 </div>
 
-> 📸 Drop your own captures into `docs/screenshots/` using the filenames above (recommended: **1280×800px, PNG**) and they'll render automatically here. Since this is a single live dashboard rather than multiple pages, these four capture it in its four key states — you can grab them straight from the live demo.
+The dashboard is built as a dark, HUD-style control panel split into two halves. On the left, a **`[ LIVE BROWSER SENSOR ]`** panel holds the camera feed viewport (idle and black until the feed is engaged), an **FPS** counter beneath it for tracking frame throughput, and a glowing **`ENGAGE SYSTEM`** button that starts capture. On the right, a **`[ TELEMETRY ]`** panel streams live stats in individually bordered cards: **Driver State** (currently reading `SYSTEM STANDBY` in large green terminal-style text), the live **EAR** value, and a **Faces Detected** counter — each card accented with a neon-green left border that echoes the "awake/alert" color language used throughout the UI. Once `ENGAGE SYSTEM` is clicked, the feed populates and these values update in real time as EAR is computed per frame.
+
+> 📸 Save your own capture as `docs/screenshots/dashboard.png` (recommended: **1280×800px, PNG**) — grab it straight from the live demo.
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 ---
 
@@ -104,6 +104,8 @@
 </tr>
 </table>
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## 🧠 How It Works
@@ -127,6 +129,8 @@ flowchart LR
 6. 🚨 **Alert** — Sustained low EAR triggers immediate notification
 7. 📊 **Update** — Live dashboard reflects driver status
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## 📊 Detection Formula
@@ -146,6 +150,8 @@ EAR = (||p2 − p6|| + ||p3 − p5||) / (2 × ||p1 − p4||)
 | ✅ **Awake** | EAR ≥ threshold | Continue monitoring |
 | 😑 **Blinking** | EAR < threshold (brief) | Normal — ignored |
 | 😴 **Drowsy** | EAR < threshold (sustained) | 🚨 Alert triggered |
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 ---
 
@@ -177,6 +183,8 @@ driver-drowsiness-detection-system/
 └── 📖 README.md
 ```
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## ⚙️ Tech Stack
@@ -188,6 +196,8 @@ driver-drowsiness-detection-system/
 | 🌐 Frontend | HTML · CSS · JavaScript |
 | 📡 Streaming | WebRTC |
 | ☁️ Deployment | Render Cloud |
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 ---
 
@@ -231,6 +241,8 @@ python app.py
 http://127.0.0.1:5000
 ```
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## ☁️ Deployment on Render
@@ -244,6 +256,8 @@ http://127.0.0.1:5000
 | 5 | Set **Start Command** → `gunicorn app:app` |
 | 6 | Deploy 🚀 |
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## 🎯 Use Cases
@@ -252,6 +266,8 @@ http://127.0.0.1:5000
 - 🚛 **Fleet management** — monitor commercial drivers
 - 🤖 **AI research** — fatigue & attention modeling
 - 🚘 **Smart vehicles** — ADAS integration
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 ---
 
@@ -264,11 +280,15 @@ http://127.0.0.1:5000
 - [ ] 👥 Multi-driver detection support
 - [ ] 📊 Session-based drowsiness reports
 
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
+
 ---
 
 ## ⚠️ Disclaimer
 
 This project is a research and educational prototype demonstrating real-time drowsiness detection with computer vision. It is **not a certified safety device** and hasn't been validated against automotive safety standards. It should be treated as a supplementary tool at most — never as a driver's sole line of defense against fatigue while on the road.
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 ---
 
