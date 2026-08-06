@@ -59,14 +59,21 @@
 
 ![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
 
-**AI Driver Monitoring Hub — standby state**
-*A dark, HUD-style control panel showing the live camera feed on the left and real-time EAR / driver-state telemetry on the right, ready to engage with a single click.*
+![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
+
+**AI Driver Monitoring Hub — Standby Dashboard**
+
+*A futuristic HUD-inspired monitoring dashboard designed for real-time driver fatigue detection. The interface combines live video processing with instant telemetry updates to provide a clear view of the driver's alertness.*
 
 </div>
 
-The dashboard is built as a dark, HUD-style control panel split into two halves. On the left, a **`[ LIVE BROWSER SENSOR ]`** panel holds the camera feed viewport (idle and black until the feed is engaged), an **FPS** counter beneath it for tracking frame throughput, and a glowing **`ENGAGE SYSTEM`** button that starts capture. On the right, a **`[ TELEMETRY ]`** panel streams live stats in individually bordered cards: **Driver State** (currently reading `SYSTEM STANDBY` in large green terminal-style text), the live **EAR** value, and a **Faces Detected** counter — each card accented with a neon-green left border that echoes the "awake/alert" color language used throughout the UI. Once `ENGAGE SYSTEM` is clicked, the feed populates and these values update in real time as EAR is computed per frame.
+The dashboard is divided into two primary sections for an intuitive monitoring experience. On the left, the **`[ LIVE BROWSER SENSOR ]`** panel displays the real-time webcam feed after the user grants camera access, along with an **FPS** counter and the **`ENGAGE SYSTEM`** button used to start monitoring.
 
-> 📸 Save your own capture as `docs/screenshots/dashboard.png` (recommended: **1280×800px, PNG**) — grab it straight from the live demo. Consider adding a second screenshot showing the "drowsy" alert state for extra visual impact.
+On the right, the **`[ TELEMETRY ]`** panel continuously displays key detection metrics, including the current **Driver State**, **Eye Aspect Ratio (EAR)**, and the number of **Faces Detected**. These values are updated for every processed frame, allowing users to monitor the driver's alertness in real time.
+
+When the calculated EAR remains below the configured threshold for a predefined number of consecutive frames, the system automatically classifies the driver as **Drowsy**, updates the dashboard status, and triggers an audible alert. Otherwise, the driver's status remains **Awake**, ensuring that normal blinking does not generate false alarms.
+
+> 💡 **Tip:** For the best detection accuracy, use the application in a well-lit environment with the driver's face clearly visible to the camera.
 
 <p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
