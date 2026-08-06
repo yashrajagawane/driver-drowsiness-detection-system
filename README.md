@@ -59,21 +59,17 @@
 
 ![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
 
-![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
+**AI Driver Monitoring Hub — Real-Time Monitoring Dashboard**
 
-**AI Driver Monitoring Hub — Standby Dashboard**
+*A modern HUD-style interface that monitors driver alertness using live facial landmark detection and the Eye Aspect Ratio (EAR) algorithm.*
 
-*A futuristic HUD-inspired monitoring dashboard designed for real-time driver fatigue detection. The interface combines live video processing with instant telemetry updates to provide a clear view of the driver's alertness.*
+### 🖥️ Dashboard Overview
 
-</div>
-
-The dashboard is divided into two primary sections for an intuitive monitoring experience. On the left, the **`[ LIVE BROWSER SENSOR ]`** panel displays the real-time webcam feed after the user grants camera access, along with an **FPS** counter and the **`ENGAGE SYSTEM`** button used to start monitoring.
-
-On the right, the **`[ TELEMETRY ]`** panel continuously displays key detection metrics, including the current **Driver State**, **Eye Aspect Ratio (EAR)**, and the number of **Faces Detected**. These values are updated for every processed frame, allowing users to monitor the driver's alertness in real time.
-
-When the calculated EAR remains below the configured threshold for a predefined number of consecutive frames, the system automatically classifies the driver as **Drowsy**, updates the dashboard status, and triggers an audible alert. Otherwise, the driver's status remains **Awake**, ensuring that normal blinking does not generate false alarms.
-
-> 💡 **Tip:** For the best detection accuracy, use the application in a well-lit environment with the driver's face clearly visible to the camera.
+- 📷 Click **ENGAGE SYSTEM** to grant camera access and start monitoring.
+- 👁️ View the live webcam feed in the **LIVE BROWSER SENSOR** panel.
+- 📊 Monitor real-time **EAR**, **Driver State**, **Faces Detected**, and **FPS** in the **TELEMETRY** panel.
+- 🚨 If the EAR stays below the configured threshold for consecutive frames, the system marks the driver as **Drowsy** and triggers an audio alert.
+- ✅ During normal driving or blinking, the dashboard continues to display the driver as **Awake**.
 
 <p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
