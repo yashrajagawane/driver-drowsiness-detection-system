@@ -55,21 +55,24 @@
 
 ## 🖼️ Preview
 
-<div align="center">
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="AI Driver Monitoring Hub Dashboard" width="100%">
+</p>
 
-![AI Driver Monitoring Hub dashboard](docs/screenshots/dashboard.png)
-
-**AI Driver Monitoring Hub — Real-Time Monitoring Dashboard**
-
-*A modern HUD-style interface for real-time driver drowsiness detection using facial landmarks and the Eye Aspect Ratio (EAR) algorithm.*
+<p align="center">
+<b>AI Driver Monitoring Hub — Real-Time Monitoring Dashboard</b><br>
+<i>A modern HUD-style interface for real-time driver drowsiness detection using facial landmarks and the Eye Aspect Ratio (EAR) algorithm.</i>
+</p>
 
 ### 🖥️ How to Use
 
 1. Click **ENGAGE SYSTEM** to allow camera access.
 2. View the live webcam feed in the **LIVE BROWSER SENSOR** panel.
 3. Monitor **EAR**, **Driver State**, **Faces Detected**, and **FPS** in the **TELEMETRY** panel.
-4. If the driver's eyes remain closed for consecutive frames, the system detects **Drowsiness** and plays an alarm.
+4. If the driver's eyes remain closed for consecutive frames, the system detects **Drowsiness** and triggers an alarm.
 5. During normal blinking or alert driving, the dashboard continues to display **Awake**.
+
+<p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
 <p align="right"><a href="#readme-top">back to top ⬆️</a></p>
 
