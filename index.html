@@ -459,8 +459,13 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
     </div>
 
     <div class="metric-card">
-      <div class="metric-label">Faces Detected</div>
-      <div class="metric-value c-blue" id="faceCount">0</div>
+      <div class="metric-label">Head Focus (Gaze)</div>
+      <div class="metric-value c-blue" id="focusState">CENTER</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Yawn Count (>2 Triggers Alarm)</div>
+      <div class="metric-value c-dim" id="yawnCountDisplay">0</div>
     </div>
 
   </div>
@@ -479,14 +484,16 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
 
 // ─── CONSTANTS ───────────────────────────────────────────────
-const EAR_THRESHOLD   = 0.22;   // below = eyes closing
-const DROWSY_SECONDS  = 1.5;    // seconds to trigger alarm
+const EAR_THRESHOLD     = 0.22;   // below = eyes closing
+const DROWSY_SECONDS    = 1.5;    // seconds to trigger alarm
+const MAR_THRESHOLD     = 0.6;    // mouth aspect ratio for yawn
+const DISTRACT_SECONDS  = 2.0;    // seconds looking away to trigger alarm
 
-// MediaPipe landmark indices for each eye (same as dlib 36-47)
-// Left eye:  33,160,158,133,153,144
-// Right eye: 362,385,387,263,373,380
+// MediaPipe landmark indices
 const L_EYE = [33, 160, 158, 133, 153, 144];
 const R_EYE = [362, 385, 387, 263, 373, 380];
+const MOUTH = [13, 14, 78, 308]; // Top, Bottom, Left, Right inner lips
+const HEAD  = { nose: 1, left: 234, right: 454, top: 10, bottom: 152 }; // Bounding points
 
 // ─── STATE ───────────────────────────────────────────────────
 let faceLandmarker = null;
@@ -495,6 +502,11 @@ let eyesClosedAt   = null;
 let isAlarm        = false;
 let lastFPS        = performance.now();
 let frameCount     = 0;
+
+let yawnCount         = 0;
+let isYawning         = false;
+let distractedAt      = null;
+let focusText         = 'CENTER';
 
 // ─── DOM REFS ────────────────────────────────────────────────
 const videoEl       = document.getElementById('videoEl');
@@ -556,8 +568,10 @@ function detect() {
   ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
   if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
-    updateUI({ faces: 0, earL: null, earR: null, ear: null, closedSec: 0, fatigue: 0, state: 'SCANNING...' });
+    updateUI({ earL: null, earR: null, ear: null, closedSec: 0, fatigue: 0, state: 'SCANNING...' });
     eyesClosedAt = null;
+    distractedAt = null;
+    focusText = 'NO FACE';
     stopAlarm();
     requestAnimationFrame(detect);
     return;
@@ -568,43 +582,100 @@ function detect() {
   const earR = computeEAR(lm, R_EYE);
   const ear  = (earL + earR) / 2;
 
-  // ─── EYE STATE MACHINE ─────────────────────────────────────
+  // ─── MOUTH (YAWN) ──────────────────────────────────────────
+  const mar = euclidean(lm[MOUTH[0]], lm[MOUTH[1]]) / euclidean(lm[MOUTH[2]], lm[MOUTH[3]]);
+  
+  if (mar > MAR_THRESHOLD) {
+    if (!isYawning) {
+      isYawning = true;
+      yawnCount++;
+    }
+  } else {
+    isYawning = false;
+  }
+
+  // ─── HEAD POSE (DISTRACTION) ───────────────────────────────
+  const nose   = lm[HEAD.nose];
+  const left   = lm[HEAD.left];
+  const right  = lm[HEAD.right];
+  const top    = lm[HEAD.top];
+  const bottom = lm[HEAD.bottom];
+
+  const yawRatio   = (nose.x - left.x) / (right.x - left.x);
+  const pitchRatio = (nose.y - top.y) / (bottom.y - top.y);
+
+  let isDistracted = false;
+  focusText = 'CENTER';
+
+  if (yawRatio < 0.35) { focusText = 'LOOKING RIGHT'; isDistracted = true; }
+  else if (yawRatio > 0.65) { focusText = 'LOOKING LEFT'; isDistracted = true; }
+  else if (pitchRatio > 0.65) { focusText = 'LOOKING DOWN'; isDistracted = true; }
+  else if (pitchRatio < 0.35) { focusText = 'LOOKING UP'; isDistracted = true; }
+
+  let distractSec = 0;
+  if (isDistracted) {
+    if (!distractedAt) distractedAt = performance.now();
+    distractSec = (performance.now() - distractedAt) / 1000;
+  } else {
+    distractedAt = null;
+  }
+
+  // ─── STATE MACHINE ─────────────────────────────────────────
   let closedSec = 0;
   let state     = 'AWAKE';
 
   if (ear < EAR_THRESHOLD) {
     if (!eyesClosedAt) eyesClosedAt = performance.now();
     closedSec = (performance.now() - eyesClosedAt) / 1000;
-
-    if (closedSec >= DROWSY_SECONDS) {
-      state = '🚨 ALARM: DROWSY!';
-      startAlarm();
-    } else {
-      state = '⚠ EYES CLOSING...';
-      stopAlarm();
-    }
   } else {
     eyesClosedAt = null;
+  }
+
+  // Priority of alarms: Micro-sleep > Yawning > Distraction
+  if (closedSec >= DROWSY_SECONDS) {
+    state = '🚨 ALARM: DROWSY!';
+    startAlarm();
+  } else if (yawnCount > 2) {
+    state = '🚨 ALARM: MULTIPLE YAWNS!';
+    startAlarm();
+  } else if (distractSec >= DISTRACT_SECONDS) {
+    state = '🚨 ALARM: DISTRACTED!';
+    startAlarm();
+  } else if (ear < EAR_THRESHOLD) {
+    state = '⚠ EYES CLOSING...';
+    stopAlarm();
+  } else if (isYawning) {
+    state = '⚠ YAWNING...';
+    stopAlarm();
+  } else if (isDistracted) {
+    state = `⚠ ${focusText}`;
+    stopAlarm();
+  } else {
     state = 'AWAKE';
     stopAlarm();
   }
 
-  // Fatigue %: scales from 0 when EAR normal, to 100 when eyes closed DROWSY_SECONDS
+  // Fatigue %: scales based on eye closure
   const fatigue = closedSec > 0
     ? Math.min(100, Math.round((closedSec / DROWSY_SECONDS) * 100))
     : Math.max(0, Math.round((0.32 - ear) / 0.10 * 30));
 
   // No visual overlays on the video feed — clean view only.
 
-  updateUI({ faces: 1, earL, earR, ear, closedSec, fatigue, state });
+  updateUI({ earL, earR, ear, closedSec, fatigue, state });
   updateFPS(now);
   requestAnimationFrame(detect);
 }
 
 
 // ─── UI UPDATE ───────────────────────────────────────────────
-function updateUI({ faces, earL, earR, ear, closedSec, fatigue, state }) {
-  document.getElementById('faceCount').textContent  = faces;
+function updateUI({ earL, earR, ear, closedSec, fatigue, state }) {
+  document.getElementById('focusState').textContent = focusText;
+  
+  const yawnEl = document.getElementById('yawnCountDisplay');
+  yawnEl.textContent = yawnCount;
+  yawnEl.className = yawnCount > 2 ? 'metric-value c-red' : (yawnCount > 0 ? 'metric-value c-orange' : 'metric-value c-dim');
+
   document.getElementById('earL').textContent       = earL !== null ? earL.toFixed(2) : '—'; /* 2 decimals to prevent wrap */
   document.getElementById('earR').textContent       = earR !== null ? earR.toFixed(2) : '—';
   document.getElementById('earAvg').textContent     = ear  !== null ? ear.toFixed(2)  : '—';
