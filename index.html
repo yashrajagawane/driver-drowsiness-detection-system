@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AI Driver Monitor</title>
+<meta name="description" content="Real-time AI-powered driver drowsiness detection. Works offline on any device.">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI Driver">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #00e676;
+  --blue: #00b0ff;
+  --orange: #ff9100;
+  --red: #ff1744;
+  --bg: #080c10;
+  --panel: #0e1318;
+  --border: #1e2832;
+  --text-dim: #607080;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+  min-height: 100dvh;
+}
+
+/* ─── HEADER ─────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1100px;
+  padding: 4px 0;
+}
+
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(13px, 3vw, 18px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: all .3s;
+}
+.status-pill.ready { color: var(--green); border-color: var(--green); box-shadow: 0 0 8px rgba(0,230,118,.3); }
+
+/* ─── MAIN GRID ──────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+  width: 100%;
+  max-width: 1100px;
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* ─── VIDEO PANEL ────────────────────────────── */
+.video-panel {
+  position: relative;
+  background: var(--panel);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.panel-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  padding: 10px 14px 6px;
+}
+
+.video-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+#videoEl {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+  border-radius: 0 0 16px 16px;
+}
+
+#overlayCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  pointer-events: none;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Start button overlay */
+#startOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8,12,16,.85);
+  backdrop-filter: blur(8px);
+  gap: 16px;
+  z-index: 10;
+  border-radius: 16px;
+}
+
+.start-icon { font-size: 56px; }
+
+#startBtn {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 14px 36px;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 32px rgba(0,230,118,.4);
+  transition: transform .15s, box-shadow .15s;
+}
+
+#startBtn:hover { transform: scale(1.05); box-shadow: 0 0 48px rgba(0,230,118,.6); }
+#startBtn:active { transform: scale(.97); }
+
+.start-hint { font-size: 12px; color: var(--text-dim); text-align: center; padding: 0 20px; }
+
+/* Scanline overlay while active */
+.scan-line {
+  display: none;
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  animation: scan 3s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+.scanning .scan-line { display: block; }
+
+@keyframes scan {
+  0% { top: 0; opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* FPS badge */
+#fpsBadge {
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(0,0,0,.5);
+  padding: 2px 8px;
+  border-radius: 999px;
+  z-index: 4;
+}
+
+/* ─── TELEMETRY PANEL ────────────────────────── */
+.tele-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metric-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  transition: border-color .3s, box-shadow .3s;
+}
+
+.metric-card.alert-warning { border-color: var(--orange); box-shadow: 0 0 16px rgba(255,145,0,.2); }
+.metric-card.alert-alarm   { border-color: var(--red);    box-shadow: 0 0 24px rgba(255,23,68,.3); animation: pulse 1s ease-in-out infinite; }
+.metric-card.alert-ok      { border-color: var(--green);  box-shadow: 0 0 12px rgba(0,230,118,.15); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,23,68,.3); }
+  50%       { box-shadow: 0 0 40px rgba(255,23,68,.7); }
+}
+
+.metric-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: 700;
+  line-height: 1.1;
+  word-break: break-word;
+  transition: color .3s;
+}
+
+.c-green  { color: var(--green); }
+.c-orange { color: var(--orange); }
+.c-red    { color: var(--red); }
+.c-blue   { color: var(--blue); }
+.c-dim    { color: var(--text-dim); }
+
+/* Progress bar */
+.bar-track {
+  width: 100%;
+  height: 8px;
+  background: #1a2030;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: var(--green);
+  transition: width .3s, background .3s;
+}
+
+/* EAR row */
+.ear-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.ear-col {
+  flex: 1;
+  background: #0a1018;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Install banner */
+#installBanner {
+  display: none;
+  width: 100%;
+  max-width: 1100px;
+  background: linear-gradient(135deg, #0a1a10, #0a1018);
+  border: 1px solid var(--green);
+  border-radius: 12px;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#installBanner.visible { display: flex; }
+
+.install-text { font-size: 13px; color: #ccc; }
+.install-text strong { color: var(--green); }
+
+#installBtn {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 18px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Alarm flash */
+@keyframes alarmFlash {
+  0%, 100% { background: var(--bg); }
+  50% { background: rgba(255,23,68,.07); }
+}
+
+body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
+
+/* Offline badge */
+#offlineBadge {
+  display: none;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255,145,0,.15);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+}
+#offlineBadge.visible { display: inline-block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🚗 AI DRIVER MONITOR</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="offlineBadge">OFFLINE</span>
+    <div class="status-pill" id="statusPill">STANDBY</div>
+  </div>
+</header>
+
+<!-- Install PWA banner -->
+<div id="installBanner">
+  <div class="install-text">📲 <strong>Install as App</strong> — works offline on your phone &amp; PC!</div>
+  <button id="installBtn">INSTALL</button>
+  <button onclick="document.getElementById('installBanner').classList.remove('visible')" style="background:none;border:none;color:#888;cursor:pointer;font-size:18px;">✕</button>
+</div>
+
+<div class="grid">
+
+  <!-- Video -->
+  <div class="video-panel" id="videoPanel">
+    <div class="panel-label">[ LIVE SENSOR FEED ]</div>
+    <div class="video-wrapper" id="videoWrapper">
+      <video id="videoEl" autoplay playsinline muted></video>
+      <canvas id="overlayCanvas"></canvas>
+      <div class="scan-line"></div>
+      <div id="fpsBadge">— FPS</div>
+
+      <div id="startOverlay">
+        <div class="start-icon">👁️</div>
+        <button id="startBtn">ENGAGE SYSTEM</button>
+        <p class="start-hint">Tap to enable camera. All processing happens on your device — nothing is uploaded.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telemetry -->
+  <div class="tele-panel">
+
+    <div class="metric-card" id="statusCard">
+      <div class="metric-label">Driver State</div>
+      <div class="metric-value c-dim" id="driverState">SYSTEM STANDBY</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Eye Aspect Ratio (EAR)</div>
+      <div class="ear-row">
+        <div class="ear-col">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">LEFT</div>
+          <div class="metric-value c-blue" id="earL">—</div>
+        </div>
+        <div class="ear-col">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">RIGHT</div>
+          <div class="metric-value c-blue" id="earR">—</div>
+        </div>
+        <div class="ear-col">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">AVG</div>
+          <div class="metric-value c-green" id="earAvg">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Fatigue Level (<span id="fatigueText">0</span>%)</div>
+      <div class="bar-track">
+        <div class="bar-fill" id="fatigueFill"></div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Eyes Closed Duration</div>
+      <div class="metric-value c-dim" id="closedDur">0.0s</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Faces Detected</div>
+      <div class="metric-value c-blue" id="faceCount">0</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hidden audio -->
+<audio id="alarmAudio" loop preload="auto">
+  <source src="static/alarm.wav" type="audio/wav">
+</audio>
+
+<!-- MediaPipe Vision Tasks (CDN — cached by service worker) -->
+<script type="module">
+import {
+  FaceLandmarker,
+  FilesetResolver,
+  DrawingUtils
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
+
+// ─── CONSTANTS ───────────────────────────────────────────────
+const EAR_THRESHOLD   = 0.22;   // below = eyes closing
+const DROWSY_SECONDS  = 1.5;    // seconds to trigger alarm
+
+// MediaPipe landmark indices for each eye (same as dlib 36-47)
+// Left eye:  33,160,158,133,153,144
+// Right eye: 362,385,387,263,373,380
+const L_EYE = [33, 160, 158, 133, 153, 144];
+const R_EYE = [362, 385, 387, 263, 373, 380];
+
+// ─── STATE ───────────────────────────────────────────────────
+let faceLandmarker = null;
+let isRunning      = false;
+let eyesClosedAt   = null;
+let isAlarm        = false;
+let lastFPS        = performance.now();
+let frameCount     = 0;
+
+// ─── DOM REFS ────────────────────────────────────────────────
+const videoEl       = document.getElementById('videoEl');
+const overlayCanvas = document.getElementById('overlayCanvas');
+const ctx           = overlayCanvas.getContext('2d');
+const startBtn      = document.getElementById('startBtn');
+const startOverlay  = document.getElementById('startOverlay');
+const videoPanel    = document.getElementById('videoPanel');
+const alarmAudio    = document.getElementById('alarmAudio');
+const statusPill    = document.getElementById('statusPill');
+
+// ─── EAR CALCULATION ─────────────────────────────────────────
+function euclidean(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function computeEAR(lm, indices) {
+  const [p1, p2, p3, p4, p5, p6] = indices.map(i => lm[i]);
+  const A = euclidean(p2, p6);
+  const B = euclidean(p3, p5);
+  const C = euclidean(p1, p4);
+  return (A + B) / (2.0 * C);
+}
+
+// ─── INIT MEDIAPIPE ──────────────────────────────────────────
+async function initMediaPipe() {
+  statusPill.textContent = 'LOADING AI...';
+  const vision = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+  );
+  faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU"
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFaceBlendshapes: false,
+    outputFacialTransformationMatrixes: false
+  });
+  statusPill.textContent = 'AI READY';
+  statusPill.classList.add('ready');
+  console.log('[AI] FaceLandmarker ready');
+}
+
+// ─── DETECTION LOOP ──────────────────────────────────────────
+function detect() {
+  if (!isRunning || !faceLandmarker) return;
+
+  // Sync canvas size
+  if (overlayCanvas.width !== videoEl.videoWidth) {
+    overlayCanvas.width  = videoEl.videoWidth;
+    overlayCanvas.height = videoEl.videoHeight;
+  }
+
+  const now = performance.now();
+  const result = faceLandmarker.detectForVideo(videoEl, now);
+
+  ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+  if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
+    updateUI({ faces: 0, earL: null, earR: null, ear: null, closedSec: 0, fatigue: 0, state: 'SCANNING...' });
+    eyesClosedAt = null;
+    stopAlarm();
+    requestAnimationFrame(detect);
+    return;
+  }
+
+  const lm   = result.faceLandmarks[0];
+  const earL = computeEAR(lm, L_EYE);
+  const earR = computeEAR(lm, R_EYE);
+  const ear  = (earL + earR) / 2;
+
+  // ─── EYE STATE MACHINE ─────────────────────────────────────
+  let closedSec = 0;
+  let state     = 'AWAKE';
+
+  if (ear < EAR_THRESHOLD) {
+    if (!eyesClosedAt) eyesClosedAt = performance.now();
+    closedSec = (performance.now() - eyesClosedAt) / 1000;
+
+    if (closedSec >= DROWSY_SECONDS) {
+      state = '🚨 ALARM: DROWSY!';
+      startAlarm();
+    } else {
+      state = '⚠ EYES CLOSING...';
+      stopAlarm();
+    }
+  } else {
+    eyesClosedAt = null;
+    state = 'AWAKE';
+    stopAlarm();
+  }
+
+  // Fatigue %: scales from 0 when EAR normal, to 100 when eyes closed DROWSY_SECONDS
+  const fatigue = closedSec > 0
+    ? Math.min(100, Math.round((closedSec / DROWSY_SECONDS) * 100))
+    : Math.max(0, Math.round((0.32 - ear) / 0.10 * 30));
+
+  // ─── DRAW LANDMARKS ────────────────────────────────────────
+  const drawUtils = new DrawingUtils(ctx);
+  const eyeColor = ear < EAR_THRESHOLD ? '#ff1744' : '#00e676';
+
+  // Draw eye contours
+  const toLandmark = (i) => ({ x: lm[i].x, y: lm[i].y, z: lm[i].z });
+  drawEyeContour(ctx, lm, L_EYE, overlayCanvas, eyeColor);
+  drawEyeContour(ctx, lm, R_EYE, overlayCanvas, eyeColor);
+
+  updateUI({ faces: 1, earL, earR, ear, closedSec, fatigue, state });
+  updateFPS(now);
+  requestAnimationFrame(detect);
+}
+
+function drawEyeContour(ctx, lm, indices, canvas, color) {
+  ctx.beginPath();
+  indices.forEach((idx, i) => {
+    const x = lm[idx].x * canvas.width;
+    const y = lm[idx].y * canvas.height;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 8;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+// ─── UI UPDATE ───────────────────────────────────────────────
+function updateUI({ faces, earL, earR, ear, closedSec, fatigue, state }) {
+  document.getElementById('faceCount').textContent  = faces;
+  document.getElementById('earL').textContent       = earL !== null ? earL.toFixed(3) : '—';
+  document.getElementById('earR').textContent       = earR !== null ? earR.toFixed(3) : '—';
+  document.getElementById('earAvg').textContent     = ear  !== null ? ear.toFixed(3)  : '—';
+  document.getElementById('closedDur').textContent  = closedSec.toFixed(1) + 's';
+  document.getElementById('fatigueText').textContent = fatigue;
+
+  const fill = document.getElementById('fatigueFill');
+  fill.style.width = fatigue + '%';
+  fill.style.background = fatigue > 70 ? '#ff1744' : fatigue > 40 ? '#ff9100' : '#00e676';
+
+  const stateEl = document.getElementById('driverState');
+  const card    = document.getElementById('statusCard');
+  stateEl.textContent = state;
+
+  card.className = 'metric-card';
+  if (state.includes('ALARM')) {
+    stateEl.className = 'metric-value c-red';
+    card.classList.add('alert-alarm');
+    document.body.classList.add('alarming');
+  } else if (state.includes('CLOSING')) {
+    stateEl.className = 'metric-value c-orange';
+    card.classList.add('alert-warning');
+    document.body.classList.remove('alarming');
+  } else if (state === 'AWAKE') {
+    stateEl.className = 'metric-value c-green';
+    card.classList.add('alert-ok');
+    document.body.classList.remove('alarming');
+  } else {
+    stateEl.className = 'metric-value c-dim';
+    document.body.classList.remove('alarming');
+  }
+}
+
+function updateFPS(now) {
+  frameCount++;
+  if (now - lastFPS >= 1000) {
+    document.getElementById('fpsBadge').textContent = frameCount + ' FPS';
+    frameCount = 0;
+    lastFPS = now;
+  }
+}
+
+// ─── ALARM ───────────────────────────────────────────────────
+function startAlarm() {
+  if (!isAlarm) {
+    alarmAudio.play().catch(() => {});
+    isAlarm = true;
+  }
+}
+
+function stopAlarm() {
+  if (isAlarm) {
+    alarmAudio.pause();
+    alarmAudio.currentTime = 0;
+    isAlarm = false;
+  }
+}
+
+// ─── START BUTTON ────────────────────────────────────────────
+startBtn.addEventListener('click', async () => {
+  if (!faceLandmarker) {
+    await initMediaPipe();
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    videoEl.srcObject = stream;
+    await videoEl.play();
+
+    // Unlock audio
+    alarmAudio.volume = 1.0;
+    alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(() => {});
+
+    startOverlay.style.display = 'none';
+    videoPanel.classList.add('scanning');
+    isRunning = true;
+
+    statusPill.textContent = 'MONITORING';
+    statusPill.className = 'status-pill ready';
+
+    requestAnimationFrame(detect);
+  } catch (e) {
+    alert('Camera permission is required to use this app.');
+  }
+});
+
+// ─── OFFLINE INDICATOR ───────────────────────────────────────
+window.addEventListener('online',  () => document.getElementById('offlineBadge').classList.remove('visible'));
+window.addEventListener('offline', () => document.getElementById('offlineBadge').classList.add('visible'));
+if (!navigator.onLine) document.getElementById('offlineBadge').classList.add('visible');
+
+// ─── PWA: SERVICE WORKER ─────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+    .catch(err => console.warn('[PWA] SW registration failed:', err));
+}
+
+// ─── PWA: INSTALL PROMPT ─────────────────────────────────────
+let deferredPrompt;
+const installBanner = document.getElementById('installBanner');
+const installBtn    = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBanner.classList.add('visible');
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('[PWA] Install outcome:', outcome);
+  deferredPrompt = null;
+  installBanner.classList.remove('visible');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBanner.classList.remove('visible');
+  console.log('[PWA] App installed!');
+});
+
+// ─── INIT (load model in background) ─────────────────────────
+initMediaPipe();
+</script>
+
+</body>
+</html>

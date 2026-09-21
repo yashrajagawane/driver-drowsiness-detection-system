@@ -1,0 +1,28 @@
+{
+  "name": "AI Driver Monitor",
+  "short_name": "DriverAI",
+  "description": "Real-time AI driver drowsiness detection — works offline, no server needed.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080c10",
+  "theme_color": "#080c10",
+  "lang": "en",
+  "categories": ["utilities", "health"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": []
+}

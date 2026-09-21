@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ai-driver-monitor
+    env: static
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
