@@ -196,14 +196,14 @@ header {
 
 /* FPS badge */
 #fpsBadge {
-  position: absolute;
-  top: 8px; right: 10px;
-  font-size: 10px;
-  color: var(--text-dim);
-  background: rgba(0,0,0,.5);
-  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  background: rgba(0,230,118,.1);
+  border: 1px solid rgba(0,230,118,.3);
+  padding: 2px 10px;
   border-radius: 999px;
-  z-index: 4;
+  letter-spacing: 1px;
 }
 
 /* ─── TELEMETRY PANEL ────────────────────────── */
@@ -363,12 +363,14 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
 
   <!-- Video -->
   <div class="video-panel" id="videoPanel">
-    <div class="panel-label">[ LIVE SENSOR FEED ]</div>
+    <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>[ LIVE SENSOR FEED ]</span>
+    <span id="fpsBadge">— FPS</span>
+  </div>
     <div class="video-wrapper" id="videoWrapper">
       <video id="videoEl" autoplay playsinline muted></video>
       <canvas id="overlayCanvas"></canvas>
       <div class="scan-line"></div>
-      <div id="fpsBadge">— FPS</div>
 
       <div id="startOverlay">
         <div class="start-icon">👁️</div>
@@ -433,8 +435,7 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
 <script type="module">
 import {
   FaceLandmarker,
-  FilesetResolver,
-  DrawingUtils
+  FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
 
 // ─── CONSTANTS ───────────────────────────────────────────────
@@ -553,35 +554,13 @@ function detect() {
     ? Math.min(100, Math.round((closedSec / DROWSY_SECONDS) * 100))
     : Math.max(0, Math.round((0.32 - ear) / 0.10 * 30));
 
-  // ─── DRAW LANDMARKS ────────────────────────────────────────
-  const drawUtils = new DrawingUtils(ctx);
-  const eyeColor = ear < EAR_THRESHOLD ? '#ff1744' : '#00e676';
-
-  // Draw eye contours
-  const toLandmark = (i) => ({ x: lm[i].x, y: lm[i].y, z: lm[i].z });
-  drawEyeContour(ctx, lm, L_EYE, overlayCanvas, eyeColor);
-  drawEyeContour(ctx, lm, R_EYE, overlayCanvas, eyeColor);
+  // No visual overlays on the video feed — clean view only.
 
   updateUI({ faces: 1, earL, earR, ear, closedSec, fatigue, state });
   updateFPS(now);
   requestAnimationFrame(detect);
 }
 
-function drawEyeContour(ctx, lm, indices, canvas, color) {
-  ctx.beginPath();
-  indices.forEach((idx, i) => {
-    const x = lm[idx].x * canvas.width;
-    const y = lm[idx].y * canvas.height;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 8;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-}
 
 // ─── UI UPDATE ───────────────────────────────────────────────
 function updateUI({ faces, earL, earR, ear, closedSec, fatigue, state }) {
