@@ -14,20 +14,22 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+::-webkit-scrollbar { display: none; } /* Hide scrollbars for cleaner look */
+
 :root {
-  --green: #00e676;
-  --blue: #00b0ff;
+  --green: #00fa9a; /* Brighter neon green */
+  --blue: #00e5ff; /* Cyan */
   --orange: #ff9100;
   --red: #ff1744;
-  --bg: #080c10;
-  --panel: #0e1318;
-  --border: #1e2832;
-  --text-dim: #607080;
+  --bg: #05080b; /* Deeper black */
+  --panel: rgba(14, 19, 24, 0.65); /* Glassmorphism */
+  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: #788a99;
 }
 
 html, body {
@@ -59,13 +61,14 @@ header {
 
 .logo {
   font-family: 'Orbitron', monospace;
-  font-size: clamp(13px, 3vw, 18px);
+  font-size: clamp(14px, 3vw, 20px);
   font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   background: linear-gradient(135deg, var(--blue), var(--green));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-transform: uppercase;
 }
 
 .status-pill {
@@ -98,12 +101,15 @@ header {
 .video-panel {
   position: relative;
   background: var(--panel);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 300px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .panel-label {
@@ -164,34 +170,48 @@ header {
   background: linear-gradient(135deg, var(--blue), var(--green));
   color: #000;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 0 32px rgba(0,230,118,.4);
-  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 24px rgba(0,250,154,.3);
+  transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .2s;
 }
 
-#startBtn:hover { transform: scale(1.05); box-shadow: 0 0 48px rgba(0,230,118,.6); }
+#startBtn:hover { transform: scale(1.05); box-shadow: 0 8px 32px rgba(0,250,154,.5); }
 #startBtn:active { transform: scale(.97); }
 
-.start-hint { font-size: 12px; color: var(--text-dim); text-align: center; padding: 0 20px; }
+.start-hint { font-size: 12px; color: var(--text-dim); text-align: center; padding: 0 20px; max-width: 400px; line-height: 1.5; }
+
+/* HUD Corners for Video */
+.hud-corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(0, 229, 255, 0.5);
+  pointer-events: none;
+  z-index: 5;
+}
+.hud-tl { top: 40px; left: 16px; border-right: none; border-bottom: none; }
+.hud-tr { top: 40px; right: 16px; border-left: none; border-bottom: none; }
+.hud-bl { bottom: 16px; left: 16px; border-right: none; border-top: none; }
+.hud-br { bottom: 16px; right: 16px; border-left: none; border-top: none; }
 
 /* Scanline overlay while active */
 .scan-line {
   display: none;
   position: absolute;
   left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--green), transparent);
-  animation: scan 3s linear infinite;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 250, 154, 0) 0%, rgba(0, 250, 154, 0.1) 50%, rgba(0, 250, 154, 0) 100%);
+  background-size: 100% 4px;
   pointer-events: none;
   z-index: 5;
+  animation: scan 4s linear infinite;
 }
 .scanning .scan-line { display: block; }
 
 @keyframes scan {
-  0% { top: 0; opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
 /* FPS badge */
@@ -216,14 +236,17 @@ header {
 .metric-card {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: border-color .3s, box-shadow .3s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.metric-card.alert-warning { border-color: var(--orange); box-shadow: 0 0 16px rgba(255,145,0,.2); }
-.metric-card.alert-alarm   { border-color: var(--red);    box-shadow: 0 0 24px rgba(255,23,68,.3); animation: pulse 1s ease-in-out infinite; }
-.metric-card.alert-ok      { border-color: var(--green);  box-shadow: 0 0 12px rgba(0,230,118,.15); }
+.metric-card.alert-warning { border-color: var(--orange); box-shadow: 0 0 16px rgba(255,145,0,.15); }
+.metric-card.alert-alarm   { border-color: var(--red);    box-shadow: 0 0 24px rgba(255,23,68,.25); animation: pulse 1s ease-in-out infinite; }
+.metric-card.alert-ok      { border-color: rgba(0, 250, 154, 0.3); box-shadow: 0 0 16px rgba(0,250,154,.08); }
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 20px rgba(255,23,68,.3); }
@@ -240,18 +263,26 @@ header {
 }
 
 .metric-value {
-  font-family: 'Orbitron', monospace;
-  font-size: clamp(18px, 4vw, 26px);
+  font-family: 'JetBrains Mono', monospace; /* Switched to a cleaner mono font for numbers */
+  font-size: clamp(20px, 4vw, 28px);
   font-weight: 700;
   line-height: 1.1;
   word-break: break-word;
-  transition: color .3s;
+  font-variant-numeric: tabular-nums; /* Prevents jumping */
+  transition: color .3s, text-shadow .3s;
 }
 
-.c-green  { color: var(--green); }
-.c-orange { color: var(--orange); }
-.c-red    { color: var(--red); }
-.c-blue   { color: var(--blue); }
+/* Driver State specifically needs to look bigger and use Orbitron */
+#driverState {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(22px, 5vw, 32px);
+  letter-spacing: 2px;
+}
+
+.c-green  { color: var(--green); text-shadow: 0 0 12px rgba(0,250,154,.3); }
+.c-orange { color: var(--orange); text-shadow: 0 0 12px rgba(255,145,0,.3); }
+.c-red    { color: var(--red); text-shadow: 0 0 16px rgba(255,23,68,.4); }
+.c-blue   { color: var(--blue); text-shadow: 0 0 12px rgba(0,229,255,.3); }
 .c-dim    { color: var(--text-dim); }
 
 /* Progress bar */
@@ -281,10 +312,15 @@ header {
 
 .ear-col {
   flex: 1;
-  background: #0a1018;
-  border-radius: 10px;
-  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 6px; /* Reduced side padding */
   text-align: center;
+}
+
+.ear-col .metric-value {
+  font-size: 22px; /* Fixed size to prevent wrapping */
 }
 
 /* Install banner */
@@ -370,6 +406,10 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
     <div class="video-wrapper" id="videoWrapper">
       <video id="videoEl" autoplay playsinline muted></video>
       <canvas id="overlayCanvas"></canvas>
+      <div class="hud-corner hud-tl"></div>
+      <div class="hud-corner hud-tr"></div>
+      <div class="hud-corner hud-bl"></div>
+      <div class="hud-corner hud-br"></div>
       <div class="scan-line"></div>
 
       <div id="startOverlay">
@@ -565,9 +605,9 @@ function detect() {
 // ─── UI UPDATE ───────────────────────────────────────────────
 function updateUI({ faces, earL, earR, ear, closedSec, fatigue, state }) {
   document.getElementById('faceCount').textContent  = faces;
-  document.getElementById('earL').textContent       = earL !== null ? earL.toFixed(3) : '—';
-  document.getElementById('earR').textContent       = earR !== null ? earR.toFixed(3) : '—';
-  document.getElementById('earAvg').textContent     = ear  !== null ? ear.toFixed(3)  : '—';
+  document.getElementById('earL').textContent       = earL !== null ? earL.toFixed(2) : '—'; /* 2 decimals to prevent wrap */
+  document.getElementById('earR').textContent       = earR !== null ? earR.toFixed(2) : '—';
+  document.getElementById('earAvg').textContent     = ear  !== null ? ear.toFixed(2)  : '—';
   document.getElementById('closedDur').textContent  = closedSec.toFixed(1) + 's';
   document.getElementById('fatigueText').textContent = fatigue;
 
