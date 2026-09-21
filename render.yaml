@@ -1,9 +1,11 @@
 services:
   - type: web
     name: ai-driver-monitor
-    env: static
-    staticPublishPath: .
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///driver.db   # Replace with Render PostgreSQL URL in Phase 2
+      - key: FLASK_DEBUG
+        value: "0"

@@ -25,6 +25,9 @@ dist/
 # Environment variables
 # ------------------------------
 .env
+*.db
+*.db-shm
+*.db-wal
 
 # ------------------------------
 # OS Files

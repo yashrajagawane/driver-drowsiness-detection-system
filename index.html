@@ -376,6 +376,242 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
   color: var(--orange);
 }
 #offlineBadge.visible { display: inline-block; }
+
+/* ─── CONTACT BUTTON ────────────────────────── */
+#contactBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 5px 9px;
+  font-size: 16px;
+  transition: border-color .2s, color .2s, box-shadow .2s;
+  line-height: 1;
+}
+#contactBtn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  box-shadow: 0 0 8px rgba(0,229,255,.2);
+}
+#contactBtn.contact-set {
+  border-color: rgba(0,250,154,.4);
+  color: var(--green);
+}
+
+/* ─── MODAL OVERLAY ─────────────────────────── */
+#contactModalOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#contactModalOverlay.open { display: flex; }
+
+#contactModal {
+  background: rgba(10,15,20,.95);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 440px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  animation: modalIn .25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.92) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.modal-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color .2s;
+}
+.modal-close:hover { color: white; }
+
+/* Form fields */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.field-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.field-input {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  width: 100%;
+}
+.field-input::placeholder { color: #3a4a58; }
+.field-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.1);
+}
+.field-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,23,68,.1); }
+
+/* Toggle row */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.toggle-label { font-size: 13px; color: #ccc; }
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #1a2530;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .3s;
+}
+.toggle-track::before {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: #4a6070;
+  border-radius: 50%;
+  transition: transform .3s, background .3s;
+}
+.toggle-switch input:checked + .toggle-track { background: rgba(0,250,154,.2); }
+.toggle-switch input:checked + .toggle-track::before {
+  transform: translateX(20px);
+  background: var(--green);
+}
+
+/* Action buttons */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.btn-primary {
+  flex: 1;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 11px 0;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+}
+.btn-primary:hover { opacity: .9; transform: scale(1.02); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+.btn-danger {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 11px 16px;
+  background: transparent;
+  color: var(--red);
+  border: 1px solid rgba(255,23,68,.4);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.btn-danger:hover { background: rgba(255,23,68,.08); border-color: var(--red); }
+.btn-danger:disabled { opacity: .3; cursor: not-allowed; }
+
+/* Status bar */
+#contactStatus {
+  min-height: 20px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 0 8px;
+  transition: all .3s;
+}
+#contactStatus.loading { color: var(--blue); }
+#contactStatus.success { color: var(--green); }
+#contactStatus.err     { color: var(--red); }
+
+/* Saved contact display */
+#savedContactCard {
+  display: none;
+  background: rgba(0,250,154,.04);
+  border: 1px solid rgba(0,250,154,.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  gap: 4px;
+  flex-direction: column;
+}
+#savedContactCard.visible { display: flex; }
+.contact-row { display: flex; justify-content: space-between; align-items: center; }
+.contact-field-name { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+.contact-field-val { font-size: 13px; font-weight: 600; color: white; }
+.contact-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.badge-enabled  { background: rgba(0,250,154,.15); color: var(--green); border: 1px solid rgba(0,250,154,.3); }
+.badge-disabled { background: rgba(255,145,0,.1);  color: var(--orange); border: 1px solid rgba(255,145,0,.3); }
 </style>
 </head>
 <body>
@@ -384,9 +620,75 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
   <div class="logo">🚗 AI DRIVER MONITOR</div>
   <div style="display:flex;gap:8px;align-items:center">
     <span id="offlineBadge">OFFLINE</span>
+    <button id="contactBtn" title="Emergency Contact Settings" aria-label="Emergency Contact Settings">🆘</button>
     <div class="status-pill" id="statusPill">STANDBY</div>
   </div>
 </header>
+
+<!-- Emergency Contact Modal -->
+<div id="contactModalOverlay" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
+  <div id="contactModal">
+    <div class="modal-header">
+      <span class="modal-title" id="contactModalTitle">🆘 EMERGENCY CONTACT</span>
+      <button class="modal-close" id="contactModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <!-- Saved contact summary (shown when contact exists) -->
+    <div id="savedContactCard">
+      <div class="contact-row">
+        <span class="contact-field-name">NAME</span>
+        <span class="contact-field-val" id="savedName">—</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-field-name">PHONE</span>
+        <span class="contact-field-val" id="savedPhone">—</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-field-name">RELATIONSHIP</span>
+        <span class="contact-field-val" id="savedRelationship">—</span>
+      </div>
+      <div class="contact-row" style="margin-top:6px">
+        <span class="contact-field-name">NOTIFICATIONS</span>
+        <span class="contact-badge" id="savedEnabledBadge">ENABLED</span>
+      </div>
+    </div>
+
+    <!-- Status message -->
+    <div id="contactStatus"></div>
+
+    <!-- Form -->
+    <div class="field-group">
+      <label class="field-label" for="inputName">Contact Name *</label>
+      <input class="field-input" id="inputName" type="text"
+             placeholder="e.g. Dad, Wife, Brother" maxlength="120" autocomplete="off">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="inputPhone">Phone Number * (with country code)</label>
+      <input class="field-input" id="inputPhone" type="tel"
+             placeholder="e.g. +919876543210" autocomplete="tel">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="inputRelationship">Relationship (optional)</label>
+      <input class="field-input" id="inputRelationship" type="text"
+             placeholder="e.g. Father, Sister, Friend" maxlength="80" autocomplete="off">
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Enable emergency notifications</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleEnabled" checked>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="saveContactBtn">SAVE CONTACT</button>
+      <button class="btn-danger" id="deleteContactBtn" disabled>DELETE</button>
+    </div>
+  </div>
+</div>
 
 <!-- Install PWA banner -->
 <div id="installBanner">
@@ -802,6 +1104,176 @@ window.addEventListener('appinstalled', () => {
 
 // ─── INIT (load model in background) ─────────────────────────
 initMediaPipe();
+
+// ═══════════════════════════════════════════════════════════════
+// EMERGENCY CONTACT — API CLIENT
+// ═══════════════════════════════════════════════════════════════
+
+const contactBtn        = document.getElementById('contactBtn');
+const contactOverlay    = document.getElementById('contactModalOverlay');
+const contactClose      = document.getElementById('contactModalClose');
+const savedContactCard  = document.getElementById('savedContactCard');
+const contactStatus     = document.getElementById('contactStatus');
+const inputName         = document.getElementById('inputName');
+const inputPhone        = document.getElementById('inputPhone');
+const inputRelationship = document.getElementById('inputRelationship');
+const toggleEnabled     = document.getElementById('toggleEnabled');
+const saveContactBtn    = document.getElementById('saveContactBtn');
+const deleteContactBtn  = document.getElementById('deleteContactBtn');
+
+let currentContact = null;  // Holds the last fetched contact object
+
+// ── Helpers ──────────────────────────────────────────────────
+function setStatus(msg, type = '') {
+  contactStatus.textContent = msg;
+  contactStatus.className = type;
+}
+
+function setLoading(on) {
+  saveContactBtn.disabled   = on;
+  deleteContactBtn.disabled = on || !currentContact;
+  saveContactBtn.textContent = on ? 'SAVING...' : 'SAVE CONTACT';
+}
+
+function renderSavedCard(contact) {
+  if (!contact) {
+    savedContactCard.classList.remove('visible');
+    contactBtn.classList.remove('contact-set');
+    deleteContactBtn.disabled = true;
+    return;
+  }
+  document.getElementById('savedName').textContent         = contact.name;
+  document.getElementById('savedPhone').textContent        = contact.phone;
+  document.getElementById('savedRelationship').textContent = contact.relationship || '—';
+  const badge = document.getElementById('savedEnabledBadge');
+  badge.textContent = contact.enabled ? 'ENABLED' : 'DISABLED';
+  badge.className   = 'contact-badge ' + (contact.enabled ? 'badge-enabled' : 'badge-disabled');
+  savedContactCard.classList.add('visible');
+  contactBtn.classList.add('contact-set');
+  deleteContactBtn.disabled = false;
+}
+
+function fillForm(contact) {
+  if (!contact) {
+    inputName.value         = '';
+    inputPhone.value        = '';
+    inputRelationship.value = '';
+    toggleEnabled.checked   = true;
+    return;
+  }
+  inputName.value         = contact.name;
+  inputPhone.value        = contact.phone;
+  inputRelationship.value = contact.relationship || '';
+  toggleEnabled.checked   = contact.enabled;
+}
+
+// ── Load contact on open ──────────────────────────────────────
+async function loadContact() {
+  setStatus('Loading...', 'loading');
+  try {
+    const res  = await fetch('/api/contact');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    currentContact = data.contact;
+    renderSavedCard(currentContact);
+    fillForm(currentContact);
+    setStatus(currentContact ? 'Contact loaded.' : 'No contact saved yet.', currentContact ? 'success' : '');
+  } catch (e) {
+    setStatus('Could not load contact — are you offline?', 'err');
+    console.warn('[Contact]', e);
+  }
+}
+
+// ── Save contact ──────────────────────────────────────────────
+async function saveContact() {
+  const name  = inputName.value.trim();
+  const phone = inputPhone.value.trim();
+
+  // Client-side quick validation
+  inputName.classList.toggle('error', !name);
+  inputPhone.classList.toggle('error', !phone);
+  if (!name) { setStatus('Name is required.', 'err'); return; }
+  if (!phone) { setStatus('Phone number is required.', 'err'); return; }
+  if (!phone.startsWith('+')) {
+    inputPhone.classList.add('error');
+    setStatus('Phone must start with country code, e.g. +91...', 'err');
+    return;
+  }
+
+  setLoading(true);
+  setStatus('Saving...', 'loading');
+  try {
+    const res  = await fetch('/api/contact', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        phone,
+        relationship: inputRelationship.value.trim() || null,
+        enabled: toggleEnabled.checked,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    currentContact = data.contact;
+    renderSavedCard(currentContact);
+    setStatus('✓ Contact saved successfully!', 'success');
+  } catch (e) {
+    setStatus(e.message || 'Failed to save.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Delete contact ────────────────────────────────────────────
+async function deleteContact() {
+  if (!currentContact) return;
+  if (!confirm(`Delete emergency contact "${currentContact.name}"?`)) return;
+  setLoading(true);
+  setStatus('Deleting...', 'loading');
+  try {
+    const res  = await fetch('/api/contact', { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    currentContact = null;
+    renderSavedCard(null);
+    fillForm(null);
+    setStatus('Contact deleted.', '');
+  } catch (e) {
+    setStatus(e.message || 'Failed to delete.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Event listeners ───────────────────────────────────────────
+contactBtn.addEventListener('click', () => {
+  contactOverlay.classList.add('open');
+  loadContact();
+});
+
+contactClose.addEventListener('click', () => contactOverlay.classList.remove('open'));
+
+contactOverlay.addEventListener('click', (e) => {
+  if (e.target === contactOverlay) contactOverlay.classList.remove('open');
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') contactOverlay.classList.remove('open');
+});
+
+saveContactBtn.addEventListener('click',   saveContact);
+deleteContactBtn.addEventListener('click', deleteContact);
+
+// Clear validation styling on input
+[inputName, inputPhone].forEach(el =>
+  el.addEventListener('input', () => el.classList.remove('error'))
+);
+
+// Pre-fetch contact status silently on page load (to set contactBtn colour)
+fetch('/api/contact').then(r => r.json()).then(d => {
+  if (d.ok && d.contact) { contactBtn.classList.add('contact-set'); currentContact = d.contact; }
+}).catch(() => {});
 </script>
 
 </body>
