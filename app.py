@@ -8,7 +8,7 @@ AI Driver Monitor — Flask Backend
   PATCH  /api/contact/toggle   → flip enabled flag
 
 All AI detection runs in the browser (MediaPipe). This server only handles
-persistence and will later proxy Twilio notifications (Phase 2).
+persistence and Twilio SMS notifications.
 """
 
 import os
@@ -18,6 +18,11 @@ from datetime import datetime, timezone
 import phonenumbers
 from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+from twilio.rest import Client
+
+# Load environment variables from .env file (if it exists)
+load_dotenv()
 
 # ─── APP SETUP ───────────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=".", static_url_path="")
@@ -71,6 +76,13 @@ class EmergencyContact(db.Model):
 with app.app_context():
     db.create_all()
 
+
+# ─── STATE ───────────────────────────────────────────────────────────────────
+# In-memory tracking to prevent SMS spam.
+# If we deploy to multiple instances, this should move to Redis or the DB.
+app_state = {
+    "last_sms_sent": None
+}
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
 def validate_e164(raw: str):
@@ -183,6 +195,61 @@ def toggle_contact():
     contact.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     return ok({"contact": contact.to_dict()})
+
+
+@app.route("/api/trigger-alarm", methods=["POST"])
+def trigger_alarm():
+    """
+    Triggered by the frontend when a critical alarm occurs (Drowsy or Yawn).
+    Sends an SMS via Twilio if a contact is saved and enabled, subject to a 3-minute cooldown.
+    """
+    # 1. Check if contact exists and is enabled
+    contact = db.session.get(EmergencyContact, 1)
+    if contact is None or not contact.enabled:
+        return ok({"message": "No action taken. Contact missing or disabled."})
+
+    # 2. Check cooldown (30 seconds)
+    now = datetime.now(timezone.utc)
+    if app_state["last_sms_sent"]:
+        time_since_last = (now - app_state["last_sms_sent"]).total_seconds()
+        if time_since_last < 30:  # 30 seconds
+            return ok({
+                "message": "Cooldown active. No SMS sent.",
+                "cooldown_remaining_sec": int(30 - time_since_last)
+            })
+
+    # 3. Check Twilio config
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    from_number = os.environ.get("TWILIO_FROM_NUMBER")
+
+    if not all([account_sid, auth_token, from_number]):
+        print("[WARNING] SMS requested, but Twilio credentials are not fully configured in environment.")
+        return error("Twilio is not configured.", 500)
+
+    # 4. Send SMS
+    try:
+        client = Client(account_sid, auth_token)
+        body_text = (
+            "🚨 EMERGENCY ALERT: Possible driver drowsiness detected. "
+            "Please contact the driver immediately."
+        )
+        
+        message = client.messages.create(
+            body=body_text,
+            from_=from_number,
+            to=contact.phone
+        )
+        print(f"[INFO] SMS Sent to {contact.phone}. SID: {message.sid}")
+        
+        # Update cooldown timer
+        app_state["last_sms_sent"] = now
+        
+        return ok({"message": "SMS sent successfully.", "sid": message.sid})
+    
+    except Exception as e:
+        print(f"[ERROR] Failed to send SMS: {e}")
+        return error(f"Failed to send SMS: {str(e)}", 500)
 
 
 # ─── STATIC FILE SERVING ─────────────────────────────────────────────────────

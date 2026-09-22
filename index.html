@@ -364,7 +364,6 @@ header {
 
 body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
 
-/* Offline badge */
 #offlineBadge {
   display: none;
   font-size: 10px;
@@ -376,6 +375,36 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
   color: var(--orange);
 }
 #offlineBadge.visible { display: inline-block; }
+
+/* ─── TOAST NOTIFICATION ────────────────────── */
+#toastContainer {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(10,15,20,.95);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+#toastContainer.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.toast-icon { font-size: 18px; }
 
 /* ─── CONTACT BUTTON ────────────────────────── */
 #contactBtn {
@@ -615,6 +644,12 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
 </style>
 </head>
 <body>
+
+<!-- Toast Notification -->
+<div id="toastContainer">
+  <span class="toast-icon">📱</span>
+  <span id="toastMsg">Sending SMS alert...</span>
+</div>
 
 <header>
   <div class="logo">🚗 AI DRIVER MONITOR</div>
@@ -1025,6 +1060,9 @@ function startAlarm() {
   if (!isAlarm) {
     alarmAudio.play().catch(() => {});
     isAlarm = true;
+    
+    // Trigger Twilio SMS (non-blocking)
+    triggerSMS();
   }
 }
 
@@ -1033,6 +1071,44 @@ function stopAlarm() {
     alarmAudio.pause();
     alarmAudio.currentTime = 0;
     isAlarm = false;
+  }
+}
+
+// ─── SMS TRIGGER ─────────────────────────────────────────────
+let isSmsCoolingDown = false;
+
+function showToast(msg, icon = '📱') {
+  const toast = document.getElementById('toastContainer');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.querySelector('.toast-icon').textContent = icon;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+async function triggerSMS() {
+  if (isSmsCoolingDown) return;
+  // Basic frontend debounce (backend has the real 3-min cooldown)
+  isSmsCoolingDown = true;
+  setTimeout(() => { isSmsCoolingDown = false; }, 10000); // 10s local cooldown
+  
+  try {
+    const res = await fetch('/api/trigger-alarm', { method: 'POST' });
+    const data = await res.json();
+    
+    if (res.ok && data.sid) {
+      showToast('Emergency SMS Sent!', '✅');
+    } else if (data.message && data.message.includes('Cooldown active')) {
+      showToast(`SMS Cooldown: ${data.cooldown_remaining_sec}s left`, '⏳');
+      console.log('[SMS]', data.message);
+    } else if (!res.ok) {
+      showToast(`SMS Error: ${data.error || 'Failed to send'}`, '❌');
+      console.warn('[SMS] Error:', data);
+    } else {
+      console.log('[SMS]', data.message);
+    }
+  } catch (e) {
+    showToast('Failed to trigger SMS API', '❌');
+    console.warn('[SMS] Failed to trigger API:', e);
   }
 }
 
