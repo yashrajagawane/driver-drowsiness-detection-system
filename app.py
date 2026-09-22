@@ -272,7 +272,7 @@ def trigger_alarm():
             print(f"[ERROR] Voice call failed: {call_error}")
 
         response_payload = {
-            "message": "SMS sent successfully." if call_sid else "SMS sent. Voice call failed.",
+            "message": "SMS and voice call sent successfully." if call_sid else "SMS sent. Voice call failed.",
             "sms_sid": message.sid,
         }
         if call_sid:
