@@ -281,7 +281,7 @@ def trigger_alarm():
             "message": "SMS and voice call sent successfully." if call_sid else "SMS sent. Voice call failed.",
             "sms_sid": message.sid,
         }
-        
+
         if call_sid:
             response_payload["call_sid"] = call_sid
         if call_error:
@@ -315,3 +315,4 @@ if __name__ == "__main__":
     debug = os.environ.get("FLASK_DEBUG", "0") == "1"
     print(f"[INFO] Starting AI Driver Monitor on port {port}")
     app.run(host="0.0.0.0", port=port, debug=debug)
+
