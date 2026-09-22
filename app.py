@@ -14,13 +14,13 @@ persistence and Twilio SMS notifications.
 import os
 import re
 from datetime import datetime, timezone
-from urllib.parse import quote
 
 import phonenumbers
-from flask import Flask, jsonify, request, send_file, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory, Response
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse
 
 # Load environment variables from .env file (if it exists)
 load_dotenv()
@@ -198,6 +198,20 @@ def toggle_contact():
     return ok({"contact": contact.to_dict()})
 
 
+@app.route("/api/twiml/emergency", methods=["GET", "POST"])
+def emergency_twiml():
+    """
+    Public endpoint that Twilio fetches to read the TTS instructions.
+    Must be publicly accessible and return valid XML (TwiML).
+    """
+    response = VoiceResponse()
+    response.say(
+        "Emergency alert. The AI Driver Monitor has detected possible "
+        "driver drowsiness. Please contact the driver immediately."
+    )
+    return Response(str(response), mimetype='text/xml')
+
+
 @app.route("/api/trigger-alarm", methods=["POST"])
 def trigger_alarm():
     """
@@ -247,18 +261,10 @@ def trigger_alarm():
 
         # 5. Place emergency voice call (independent — SMS success is preserved
         #    even if the call fails)
-        #    Uses Twilio-hosted TTS template (Trial-compatible, no external server needed)
         call_sid = None
         call_error = None
         try:
-            voice_message = (
-                "Emergency alert. The AI Driver Monitor has detected possible "
-                "driver drowsiness. Please contact the driver immediately."
-            )
-            tts_url = (
-                "https://webhooks.twilio.com/v1/Voice/Template/voice_text_to_speech"
-                f"?VoiceMessage={quote(voice_message)}"
-            )
+            tts_url = "https://smart-driver-monitor.onrender.com/api/twiml/emergency"
             call = client.calls.create(
                 url=tts_url,
                 from_=from_number,
