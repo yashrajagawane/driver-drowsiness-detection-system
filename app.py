@@ -14,13 +14,13 @@ persistence and Twilio SMS notifications.
 import os
 import re
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 import phonenumbers
 from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse
 
 # Load environment variables from .env file (if it exists)
 load_dotenv()
@@ -247,16 +247,20 @@ def trigger_alarm():
 
         # 5. Place emergency voice call (independent — SMS success is preserved
         #    even if the call fails)
+        #    Uses Twilio-hosted TTS template (Trial-compatible, no external server needed)
         call_sid = None
         call_error = None
         try:
-            twiml = VoiceResponse()
-            twiml.say(
+            voice_message = (
                 "Emergency alert. The AI Driver Monitor has detected possible "
                 "driver drowsiness. Please contact the driver immediately."
             )
+            tts_url = (
+                "https://webhooks.twilio.com/v1/Voice/Template/voice_text_to_speech"
+                f"?VoiceMessage={quote(voice_message)}"
+            )
             call = client.calls.create(
-                twiml=str(twiml),
+                url=tts_url,
                 from_=from_number,
                 to=contact.phone
             )
