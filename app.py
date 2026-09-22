@@ -20,6 +20,7 @@ from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse
 
 # Load environment variables from .env file (if it exists)
 load_dotenv()
@@ -201,7 +202,9 @@ def toggle_contact():
 def trigger_alarm():
     """
     Triggered by the frontend when a critical alarm occurs (Drowsy or Yawn).
-    Sends an SMS via Twilio if a contact is saved and enabled, subject to a 3-minute cooldown.
+    Sends an SMS and places a voice call via Twilio if a contact is saved and
+    enabled, subject to a 30-second cooldown.
+    Voice and SMS share the same cooldown and use the same emergency contact.
     """
     # 1. Check if contact exists and is enabled
     contact = db.session.get(EmergencyContact, 1)
@@ -238,12 +241,43 @@ def trigger_alarm():
             to=contact.phone
         )
         print(f"[INFO] SMS Sent to {contact.phone}. SID: {message.sid}")
-        
-        # Update cooldown timer
+
+        # Update cooldown timer (shared for both SMS and voice call)
         app_state["last_sms_sent"] = now
-        
-        return ok({"message": "SMS sent successfully.", "sid": message.sid})
-    
+
+        # 5. Place emergency voice call (independent — SMS success is preserved
+        #    even if the call fails)
+        call_sid = None
+        call_error = None
+        try:
+            twiml = VoiceResponse()
+            twiml.say(
+                "Emergency alert. The AI Driver Monitor has detected possible "
+                "driver drowsiness. Please contact the driver immediately."
+            )
+            call = client.calls.create(
+                twiml=str(twiml),
+                from_=from_number,
+                to=contact.phone
+            )
+            call_sid = call.sid
+            print(f"[INFO] Voice call initiated to {contact.phone}. SID: {call_sid}")
+        except Exception as call_exc:
+            # Log the failure but do NOT expose credentials
+            call_error = str(call_exc)
+            print(f"[ERROR] Voice call failed: {call_error}")
+
+        response_payload = {
+            "message": "SMS sent successfully." if call_sid else "SMS sent. Voice call failed.",
+            "sms_sid": message.sid,
+        }
+        if call_sid:
+            response_payload["call_sid"] = call_sid
+        if call_error:
+            response_payload["call_error"] = call_error
+
+        return ok(response_payload)
+
     except Exception as e:
         print(f"[ERROR] Failed to send SMS: {e}")
         return error(f"Failed to send SMS: {str(e)}", 500)
