@@ -230,10 +230,7 @@ def trigger_alarm():
     # 4. Send SMS
     try:
         client = Client(account_sid, auth_token)
-        body_text = (
-            "🚨 EMERGENCY ALERT: Possible driver drowsiness detected. "
-            "Please contact the driver immediately."
-        )
+        body_text = "sms_appointment_reminders"
         
         message = client.messages.create(
             body=body_text,
