@@ -44,7 +44,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
+  padding: 16px 3vw;
   gap: 12px;
   min-height: 100dvh;
 }
@@ -54,7 +54,10 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   width: 100%;
+  max-width: 1440px;
   padding: 4px 0;
 }
 
@@ -86,8 +89,9 @@ header {
 .grid {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
+  max-width: 1440px;
   flex: 1;
 }
 
@@ -321,38 +325,50 @@ header {
   font-size: 22px; /* Fixed size to prevent wrapping */
 }
 
-/* Install banner */
+/* Install banner (Compact in Header) */
 #installBanner {
   display: none;
-  width: 100%;
-  max-width: 1100px;
-  background: linear-gradient(135deg, #0a1a10, #0a1018);
-  border: 1px solid var(--green);
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: rgba(0, 250, 154, 0.08);
+  border: 1px solid rgba(0, 250, 154, 0.3);
+  border-radius: 8px;
+  padding: 4px 12px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  max-width: 380px;
+  margin: 0 auto 0 32px; /* Push to the left, closer to the logo */
 }
 
 #installBanner.visible { display: flex; }
 
-.install-text { font-size: 13px; color: #ccc; }
+.install-text { font-size: 11px; color: #ccc; white-space: nowrap; }
 .install-text strong { color: var(--green); }
 
 #installBtn {
   font-family: 'Orbitron', monospace;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  padding: 8px 18px;
+  padding: 6px 12px;
   background: var(--green);
   color: #000;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
 }
+
+.dismiss-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  transition: color .2s;
+}
+.dismiss-btn:hover { color: white; }
 
 /* Alarm flash */
 @keyframes alarmFlash {
@@ -651,6 +667,16 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
 
 <header>
   <div class="logo">🚗 AI DRIVER MONITOR</div>
+
+  <!-- Moved Install PWA banner -->
+  <div id="installBanner">
+    <div class="install-text">📲 <strong>Install App</strong> (Works offline)</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="installBtn">INSTALL</button>
+      <button class="dismiss-btn" onclick="document.getElementById('installBanner').classList.remove('visible')" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+
   <div style="display:flex;gap:8px;align-items:center">
     <span id="offlineBadge">OFFLINE</span>
     <button id="contactBtn" title="Emergency Contact Settings" aria-label="Emergency Contact Settings">🆘</button>
@@ -721,13 +747,6 @@ body.alarming { animation: alarmFlash .6s ease-in-out infinite; }
       <button class="btn-danger" id="deleteContactBtn" disabled>DELETE</button>
     </div>
   </div>
-</div>
-
-<!-- Install PWA banner -->
-<div id="installBanner">
-  <div class="install-text">📲 <strong>Install as App</strong> — works offline on your phone &amp; PC!</div>
-  <button id="installBtn">INSTALL</button>
-  <button onclick="document.getElementById('installBanner').classList.remove('visible')" style="background:none;border:none;color:#888;cursor:pointer;font-size:18px;">✕</button>
 </div>
 
 <div class="grid">
