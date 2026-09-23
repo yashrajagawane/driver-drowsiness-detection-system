@@ -54,11 +54,6 @@
 - [Progressive Web App](#-progressive-web-app)
 - [Detection Thresholds](#-detection-thresholds)
 - [Emergency Escalation Pipeline](#-emergency-escalation-pipeline)
-- [Use Cases](#-use-cases)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [FAQ](#-faq)
-- [Disclaimer](#️-disclaimer)
 - [License](#-license)
 - [Author](#-author)
 
