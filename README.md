@@ -62,7 +62,7 @@
 ## 🖼️ Preview
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="AI Driver Monitoring Hub Dashboard" width="100%">
+  <img src="docs/screenshots/dashboard_new.png" alt="AI Driver Monitoring Hub Dashboard" width="100%">
 </p>
 
 <p align="center">
